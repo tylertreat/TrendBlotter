@@ -1,4 +1,4 @@
 ripl
 ====
 
-What's trending on the internet?
+What's trending on the internet
