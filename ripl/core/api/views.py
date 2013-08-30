@@ -1,6 +1,6 @@
 from flask import render_template
 
-from ripl.api.blueprint import blueprint
+from ripl.core.api.blueprint import blueprint
 
 
 # Error handlers

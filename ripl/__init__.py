@@ -2,10 +2,10 @@
 
 import flask
 
-from ripl.api.blueprint import blueprint
+from ripl.core.api.blueprint import blueprint
 
 # Imported to register urls
-from ripl.api import views
+from ripl.core.api import views
 
 
 def create_app(config="ripl.settings"):
