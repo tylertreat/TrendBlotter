@@ -9,3 +9,4 @@ Flask-Cache
 httpagentparser
 webob
 itsdangerous
+git+git://github.com/WebFilings/furious.git#egg=furious
