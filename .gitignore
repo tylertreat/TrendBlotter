@@ -1,36 +1,17 @@
-*.py[cod]
+secret_keys.py
+*.py[co]
+.DS_Store
+.idea/*
+
+.coverage
+.noseids
 .build
 
-# C extensions
-*.so
+\#*\#
+.idea
+*.xml
+gaepdb.py
 
-# Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
-.installed.cfg
-lib
-lib64
+lib/external
 
-# Installer logs
-pip-log.txt
-
-# Unit test / coverage reports
-.coverage
-.tox
-nosetests.xml
-
-# Translations
-*.mo
-
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
+settingslocal.py
