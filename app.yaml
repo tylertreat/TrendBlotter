@@ -1,0 +1,48 @@
+application: ripl
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+skip_files: |
+ ^(.*/)?(
+ (app\.yaml)|
+ (app\.yml)|
+ (#.*#)|
+ (.*~)|
+ (.*\.py[co])|
+ (.*/RCS/.*)|
+ (\..*)|
+ (settingslocal\.py)|
+ (node_modules)|
+ )$
+
+builtins:
+- appstats: on
+- remote_api: on
+
+admin_console:
+  pages:
+  - name: Appstats
+    url: /_ah/stats/
+
+libraries:
+- name: jinja2
+  version: "2.6"
+- name: markupsafe
+  version: "0.15"
+
+handlers:
+- url: /favicon.ico
+  static_files: ripl/static/img/favicon.ico
+  upload: ripl/static/img/favicon.ico
+
+- url: /robots.txt
+  static_files: ripl/static/robots.txt
+  upload: ripl/static/robots.txt
+
+- url: /static
+  static_dir: ripl/static
+
+- url: .*
+  script: main.app
