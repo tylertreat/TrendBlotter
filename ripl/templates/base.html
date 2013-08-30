@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}ripl{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="/static/css/bootstrap.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="/static/css/main.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/static/img/favicon.png">
+    {% block style_block %}{# page-specific CSS #}{% endblock %}
+    {% block head_script %}{# defer-incapable JS block #}{% endblock %}
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="/static/js/html5shiv.js"></script>
+    <![endif]-->
+    
+  </head>
+  
+  <body>
+
+    <div class="navbar-wrapper">
+      <div class="container">
+
+        <div class="navbar navbar-inverse">
+          <div class="navbar-inner">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="brand" href="#">ripl</a>
+            <div class="nav-collapse collapse">
+              <ul class="nav">
+                <li class="active"><a href="#">Home</a></li>
+              </ul>
+            </div><!--/.nav-collapse -->
+          </div><!-- /.navbar-inner -->
+        </div><!-- /.navbar -->
+
+      </div> <!-- /.container -->
+    </div><!-- /.navbar-wrapper -->
+
+    {% block content %}{# main content area #}{% endblock %}
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+    <script src="/static/js/lib/bootstrap.min.js"></script>
+
+    </body>
+</html>
+
