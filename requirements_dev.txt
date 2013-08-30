@@ -1,0 +1,9 @@
+# Any dependencies listed here will only be installed locally, and will not be
+# deployed with your app.
+
+nose
+rednose
+mock
+coverage
+nose-exclude
+NoseGunit

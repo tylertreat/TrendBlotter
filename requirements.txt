@@ -1,0 +1,11 @@
+# Any requirements listed here will be symlinked to /lib and deployed to
+# appspot.  See requirements_dev.txt for local-only requirements.
+
+uritemplate
+Werkzeug
+httplib2
+Flask
+Flask-Cache
+httpagentparser
+webob
+itsdangerous
