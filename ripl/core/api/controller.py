@@ -1,7 +1,7 @@
 from flask import render_template
 
 from ripl.core.api.blueprint import blueprint
-from ripl.core.aggregator import aggregate
+from ripl.core.aggregation.aggregator import aggregate
 from ripl.core.decorators import admin_required
 
 

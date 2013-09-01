@@ -5,7 +5,7 @@ import flask
 from ripl.core.api.blueprint import blueprint
 
 # Imported to register urls
-from ripl.core.api import views
+from ripl.core.api import controller
 
 
 def create_app(config="ripl.settings"):
@@ -19,3 +19,4 @@ def create_app(config="ripl.settings"):
     app.jinja_env.add_extension('jinja2.ext.loopcontrols')
 
     return app
+
