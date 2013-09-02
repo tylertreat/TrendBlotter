@@ -16,6 +16,8 @@ distclean: clean
 run: deps
 		dev_appserver.py .
 
+test: clean integrations
+
 deps: py_deploy_deps py_dev_deps js
 
 py_deploy_deps: $(BUILD_DIR)/pip-deploy.log
@@ -31,11 +33,11 @@ $(BUILD_DIR)/pip-dev.log: requirements_dev.txt
 		@mkdir -p .build
 			$(PIP) install -Ur requirements_dev.txt | tee $(BUILD_DIR)/pip-dev.log
 
-unit: clean
-		nosetests --with-coverage
+unit:
+		nosetests
 
 integrations:
-		nosetests --logging-level=ERROR -a slow
+		nosetests --logging-level=ERROR -a slow --with-coverage --cover-package=ripl
 
 test: clean integrations
 
