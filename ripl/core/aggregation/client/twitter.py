@@ -1,3 +1,5 @@
+"""This is a client that wraps Twitter's trends API."""
+
 import base64
 from httplib2 import Http
 import json
@@ -6,15 +8,48 @@ import urllib
 
 from google.appengine.api import memcache
 
+from ripl import settings
+from ripl.core.aggregation import ApiRequestException
 from ripl.core.aggregation import ApiToken
 
 
 API = 'https://api.twitter.com'
-BEARER_TOKEN_ENDPOINT = '/oauth2/token'
 TWITTER_API_TOKEN = 'twitter_api_token'
 
+BEARER_TOKEN_ENDPOINT = '/oauth2/token'
+TRENDS_LOCATIONS_ENDPOINT = '/1.1/trends/available.json'
 
-def get_bearer_token(consumer_key, consumer_secret, force_refresh=False):
+
+def get_locations_with_trends():
+    """Fetch a list of locations that Twitter has trending topic information
+    for.
+    """
+
+    resp, content = _make_authorized_get(TRENDS_LOCATIONS_ENDPOINT)
+
+    if resp.status != 200:
+        raise ApiRequestException(
+            '%s request failed (status %d)' % (TRENDS_LOCATIONS_ENDPOINT,
+                                               resp.status))
+
+    return json.loads(content)
+
+
+def _make_authorized_get(endpoint):
+    """Make an authorized GET request to the given endpoint."""
+
+    http = Http()
+    token = _get_bearer_token(settings.TWITTER_CONSUMER_KEY,
+                              settings.TWITTER_CONSUMER_SECRET)
+
+    if not token:
+        raise ApiRequestException('Unable to retrieve bearer token')
+
+    return http.request('%s%s' % (API, endpoint), 'GET',
+                        headers={'Authorization': 'Bearer %s' % token})
+
+
+def _get_bearer_token(consumer_key, consumer_secret, force_refresh=False):
     """Exchange the Twitter API consumer key and secret for a bearer token to
     be used with application-only requests. When set to True, force_refresh
     will force a call to Twitter's token endpoint, bypassing any caching

@@ -5,14 +5,144 @@ import urllib
 from mock import Mock
 from mock import patch
 
+from ripl import settings
+from ripl.core.aggregation import ApiRequestException
 from ripl.core.aggregation.client import twitter
 
 
-class TestGetBearerToken(unittest.TestCase):
+class TestGetLocationsWithTrends(unittest.TestCase):
 
-    def setUp(self):
-        self.consumer_key = 'key'
-        self.consumer_secret = 'secret'
+    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    def test_bad_response(self, mock_get):
+        """Ensure that an ApiRequestException is raised when a non-200 status
+        code is returned from Twitter.
+        """
+
+        mock_get.return_value = (Mock(status=500), None)
+
+        with self.assertRaises(ApiRequestException) as ctx:
+            twitter.get_locations_with_trends()
+
+        from ripl.core.aggregation.client.twitter \
+            import TRENDS_LOCATIONS_ENDPOINT
+
+        mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
+        self.assertIsInstance(ctx.exception, ApiRequestException)
+
+    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    def test_happy_path(self, mock_get):
+        """Ensure that the correct value is returned on a successful request.
+        """
+
+        content = """[
+                        {
+                            "name": "Worldwide",
+                            "placeType": {
+                                "code": 19,
+                                "name": "Supername"
+                            },
+                            "url": "http://where.yahooapis.com/v1/place/1",
+                            "parentid": 0,
+                            "country": "",
+                            "woeid": 1,
+                            "countryCode": null
+                        },
+                        {
+                            "name": "Winnipeg",
+                            "placeType": {
+                                "code": 7,
+                                "name": "Town"
+                            },
+                            "url": "http://where.yahooapis.com/v1/place/2972",
+                            "parentid": 23424775,
+                            "country": "Canada",
+                            "woeid": 2972,
+                            "countryCode": "CA"
+                        }
+                    ]"""
+        mock_get.return_value = (Mock(status=200), content)
+
+        actual = twitter.get_locations_with_trends()
+
+        from ripl.core.aggregation.client.twitter \
+            import TRENDS_LOCATIONS_ENDPOINT
+
+        mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
+        expected = \
+            [{
+                'name': 'Worldwide',
+                'placeType': {
+                    'code': 19,
+                    'name': 'Supername'
+                },
+                'url': 'http://where.yahooapis.com/v1/place/1',
+                'parentid': 0,
+                'country': '',
+                'woeid': 1,
+                'countryCode': None
+            },
+            {
+                'name': 'Winnipeg',
+                'placeType': {
+                    'code': 7,
+                    'name': 'Town'
+                },
+                'url': 'http://where.yahooapis.com/v1/place/2972',
+                'parentid': 23424775,
+                'country': 'Canada',
+                'woeid': 2972,
+                'countryCode': 'CA'
+            }]
+
+        self.assertEqual(expected, actual)
+
+
+class TestMakeAuthorizedGet(unittest.TestCase):
+
+    @patch('ripl.core.aggregation.client.twitter._get_bearer_token')
+    def test_no_token(self, mock_get_token):
+        """Ensure that an ApiRequestException is raised when a bearer token is
+        not retrieved.
+        """
+
+        mock_get_token.return_value = None
+
+        with self.assertRaises(ApiRequestException) as ctx:
+            twitter._make_authorized_get('foo')
+
+        self.assertIsInstance(ctx.exception, ApiRequestException)
+        mock_get_token.assert_called_once_with(
+            settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET)
+
+    @patch('ripl.core.aggregation.client.twitter.Http.request')
+    @patch('ripl.core.aggregation.client.twitter._get_bearer_token')
+    def test_happy_path(self, mock_get_token, mock_request):
+        """Ensure that the correct values are returned when a request is
+        successfully made.
+        """
+
+        token = 'foo'
+        mock_get_token.return_value = token
+        endpoint = '/bar'
+        expected_response = Mock(status=200)
+        expected_content = {'bat': 'man'}
+        mock_request.return_value = (expected_response, expected_content)
+
+        resp, content = twitter._make_authorized_get(endpoint)
+
+        headers = {'Authorization': 'Bearer %s' % token}
+
+        from ripl.core.aggregation.client.twitter import API
+
+        mock_get_token.assert_called_once_with(
+            settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET)
+        mock_request.assert_called_once_with('%s%s' % (API, endpoint), 'GET',
+                                             headers=headers)
+        self.assertEqual(resp, expected_response)
+        self.assertEqual(content, expected_content)
+
+
+class TestGetBearerToken(unittest.TestCase):
 
     @patch('ripl.core.aggregation.client.twitter.memcache')
     def test_from_memcache(self, mock_memcache):
@@ -23,8 +153,8 @@ class TestGetBearerToken(unittest.TestCase):
         expected = 'foo'
         mock_memcache.get.return_value = expected
 
-        actual = twitter.get_bearer_token(self.consumer_key,
-                                          self.consumer_secret)
+        actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
+                                           settings.TWITTER_CONSUMER_SECRET)
 
         from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
 
@@ -42,8 +172,8 @@ class TestGetBearerToken(unittest.TestCase):
         mock_memcache.get.return_value = None
         mock_api_token.get_by_id.return_value = Mock(bearer_token=expected)
 
-        actual = twitter.get_bearer_token(self.consumer_key,
-                                          self.consumer_secret)
+        actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
+                                           settings.TWITTER_CONSUMER_SECRET)
 
         from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
 
@@ -66,16 +196,16 @@ class TestGetBearerToken(unittest.TestCase):
         response = '{"token_type": "bearer", "access_token": "%s"}' % expected
         mock_request.return_value = (Mock(status=200), response)
 
-        actual = twitter.get_bearer_token(self.consumer_key,
-                                          self.consumer_secret)
+        actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
+                                           settings.TWITTER_CONSUMER_SECRET)
 
         from ripl.core.aggregation.client.twitter import API
         from ripl.core.aggregation.client.twitter import BEARER_TOKEN_ENDPOINT
         from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
 
         content_type = 'application/x-www-form-urlencoded;charset=UTF-8'
-        key = urllib.quote(self.consumer_key)
-        secret = urllib.quote(self.consumer_secret)
+        key = urllib.quote(settings.TWITTER_CONSUMER_KEY)
+        secret = urllib.quote(settings.TWITTER_CONSUMER_SECRET)
         credentials = '%s:%s' % (key, secret)
         credentials = base64.b64encode(credentials)
 
@@ -103,16 +233,16 @@ class TestGetBearerToken(unittest.TestCase):
         mock_api_token.get_by_id.return_value = None
         mock_request.return_value = (Mock(status=500), None)
 
-        actual = twitter.get_bearer_token(self.consumer_key,
-                                          self.consumer_secret)
+        actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
+                                           settings.TWITTER_CONSUMER_SECRET)
 
         from ripl.core.aggregation.client.twitter import API
         from ripl.core.aggregation.client.twitter import BEARER_TOKEN_ENDPOINT
         from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
 
         content_type = 'application/x-www-form-urlencoded;charset=UTF-8'
-        key = urllib.quote(self.consumer_key)
-        secret = urllib.quote(self.consumer_secret)
+        key = urllib.quote(settings.TWITTER_CONSUMER_KEY)
+        secret = urllib.quote(settings.TWITTER_CONSUMER_SECRET)
         credentials = '%s:%s' % (key, secret)
         credentials = base64.b64encode(credentials)
 
@@ -141,16 +271,16 @@ class TestGetBearerToken(unittest.TestCase):
         response = '{"token_type": "woops"}'
         mock_request.return_value = (Mock(status=200), response)
 
-        actual = twitter.get_bearer_token(self.consumer_key,
-                                          self.consumer_secret)
+        actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
+                                           settings.TWITTER_CONSUMER_SECRET)
 
         from ripl.core.aggregation.client.twitter import API
         from ripl.core.aggregation.client.twitter import BEARER_TOKEN_ENDPOINT
         from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
 
         content_type = 'application/x-www-form-urlencoded;charset=UTF-8'
-        key = urllib.quote(self.consumer_key)
-        secret = urllib.quote(self.consumer_secret)
+        key = urllib.quote(settings.TWITTER_CONSUMER_KEY)
+        secret = urllib.quote(settings.TWITTER_CONSUMER_SECRET)
         credentials = '%s:%s' % (key, secret)
         credentials = base64.b64encode(credentials)
 
@@ -175,17 +305,17 @@ class TestGetBearerToken(unittest.TestCase):
         response = '{"token_type": "bearer", "access_token": "%s"}' % expected
         mock_request.return_value = (Mock(status=200), response)
 
-        actual = twitter.get_bearer_token(self.consumer_key,
-                                          self.consumer_secret,
-                                          force_refresh=True)
+        actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
+                                           settings.TWITTER_CONSUMER_SECRET,
+                                           force_refresh=True)
 
         from ripl.core.aggregation.client.twitter import API
         from ripl.core.aggregation.client.twitter import BEARER_TOKEN_ENDPOINT
         from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
 
         content_type = 'application/x-www-form-urlencoded;charset=UTF-8'
-        key = urllib.quote(self.consumer_key)
-        secret = urllib.quote(self.consumer_secret)
+        key = urllib.quote(settings.TWITTER_CONSUMER_KEY)
+        secret = urllib.quote(settings.TWITTER_CONSUMER_SECRET)
         credentials = '%s:%s' % (key, secret)
         credentials = base64.b64encode(credentials)
 
