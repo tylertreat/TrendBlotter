@@ -50,7 +50,7 @@ def get_bearer_token(consumer_key, consumer_secret, force_refresh=False):
                                  headers=headers)
 
     if resp.status != 200:
-        logging.warn('Failed to get new Twitter bearer token')
+        logging.warn('Failed to get Twitter token (status %d)' % resp.status)
         return None
 
     content = json.loads(content)
@@ -58,7 +58,7 @@ def get_bearer_token(consumer_key, consumer_secret, force_refresh=False):
     # Verify that a bearer token is present
     if (content.get('token_type', None) != 'bearer'
             or 'access_token' not in content):
-        logging.warn('Failed to get new Twitter bearer token')
+        logging.warn('Failed to get Twitter token (bad response)')
         return None
 
     bearer_token = content['access_token']
