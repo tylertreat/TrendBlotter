@@ -11,6 +11,10 @@ if os.environ.get('SERVER_SOFTWARE', '').startswith('Dev'):
 # Flask-Cache settings
 CACHE_TYPE = 'gaememcached'
 
+# Twitter API settings
+TWITTER_CONSUMER_KEY = 'key'
+TWITTER_CONSUMER_SECRET = 'secret'
+
 try:
     import settingslocal
 except ImportError:
