@@ -27,7 +27,7 @@ class TestGetTrendsByLocation(unittest.TestCase):
 
         from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
 
-        mock_get.assert_called_once_with(TRENDS_ENDPOINT)
+        mock_get.assert_called_once_with(TRENDS_ENDPOINT % location)
         self.assertIsInstance(ctx.exception, ApiRequestException)
 
     @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
@@ -73,7 +73,7 @@ class TestGetTrendsByLocation(unittest.TestCase):
 
         from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
 
-        mock_get.assert_called_once_with(TRENDS_ENDPOINT)
+        mock_get.assert_called_once_with(TRENDS_ENDPOINT % location)
         self.assertEqual('#ReasonsToLive', actual[0].name)
         self.assertEqual(2972, actual[0].location.id())
         self.assertEqual('#BenjLexieMarjLoveTriangle', actual[1].name)

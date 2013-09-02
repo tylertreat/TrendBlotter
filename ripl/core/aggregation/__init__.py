@@ -10,7 +10,7 @@ class ApiRequestException(Exception):
 
     def __init__(self, message, status):
         self.status = status
-        super(ApiRequestException, self, message)
+        Exception.__init__(self, message)
 
 
 class ApiToken(ndb.Model):
