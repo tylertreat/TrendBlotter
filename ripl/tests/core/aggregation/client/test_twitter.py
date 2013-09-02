@@ -14,7 +14,7 @@ class TestGetBearerToken(unittest.TestCase):
         self.consumer_key = 'key'
         self.consumer_secret = 'secret'
 
-    @patch('ripl.core.aggregation.twitter_oauth.memcache')
+    @patch('ripl.core.aggregation.client.twitter.memcache')
     def test_from_memcache(self, mock_memcache):
         """Ensure that the bearer token is returned from memcache when present
         and force_refresh is False.
@@ -31,8 +31,8 @@ class TestGetBearerToken(unittest.TestCase):
         mock_memcache.get.assert_called_once_with(TWITTER_API_TOKEN)
         self.assertEqual(expected, actual)
 
-    @patch('ripl.core.aggregation.twitter_oauth.ApiToken')
-    @patch('ripl.core.aggregation.twitter_oauth.memcache')
+    @patch('ripl.core.aggregation.client.twitter.ApiToken')
+    @patch('ripl.core.aggregation.client.twitter.memcache')
     def test_from_datastore(self, mock_memcache, mock_api_token):
         """Ensure that the bearer token is returned from the datastore when
         present and force_refresh is False.
@@ -52,9 +52,9 @@ class TestGetBearerToken(unittest.TestCase):
         mock_memcache.set.assert_called_once_with(TWITTER_API_TOKEN, expected)
         self.assertEqual(expected, actual)
 
-    @patch('ripl.core.aggregation.twitter_oauth.Http.request')
-    @patch('ripl.core.aggregation.twitter_oauth.ApiToken')
-    @patch('ripl.core.aggregation.twitter_oauth.memcache')
+    @patch('ripl.core.aggregation.client.twitter.Http.request')
+    @patch('ripl.core.aggregation.client.twitter.ApiToken')
+    @patch('ripl.core.aggregation.client.twitter.memcache')
     def test_exchange_ok(self, mock_memcache, mock_api_token, mock_request):
         """Ensure that the bearer token is fetched from Twitter when not
         already present in memcache or datastore.
@@ -90,9 +90,9 @@ class TestGetBearerToken(unittest.TestCase):
         mock_api_token.put.assert_called_once()
         self.assertEqual(expected, actual)
 
-    @patch('ripl.core.aggregation.twitter_oauth.Http.request')
-    @patch('ripl.core.aggregation.twitter_oauth.ApiToken')
-    @patch('ripl.core.aggregation.twitter_oauth.memcache')
+    @patch('ripl.core.aggregation.client.twitter.Http.request')
+    @patch('ripl.core.aggregation.client.twitter.ApiToken')
+    @patch('ripl.core.aggregation.client.twitter.memcache')
     def test_exchange_non_200(self, mock_memcache, mock_api_token,
                               mock_request):
         """Ensure that None is returned when a non-200 response status is
@@ -127,9 +127,9 @@ class TestGetBearerToken(unittest.TestCase):
         self.assertFalse(mock_api_token.put.called)
         self.assertEqual(None, actual)
 
-    @patch('ripl.core.aggregation.twitter_oauth.Http.request')
-    @patch('ripl.core.aggregation.twitter_oauth.ApiToken')
-    @patch('ripl.core.aggregation.twitter_oauth.memcache')
+    @patch('ripl.core.aggregation.client.twitter.Http.request')
+    @patch('ripl.core.aggregation.client.twitter.ApiToken')
+    @patch('ripl.core.aggregation.client.twitter.memcache')
     def test_exchange_bad_response(self, mock_memcache, mock_api_token,
                                    mock_request):
         """Ensure that None is returned when an invalid response is given by
@@ -165,9 +165,9 @@ class TestGetBearerToken(unittest.TestCase):
         self.assertFalse(mock_api_token.put.called)
         self.assertEqual(None, actual)
 
-    @patch('ripl.core.aggregation.twitter_oauth.Http.request')
-    @patch('ripl.core.aggregation.twitter_oauth.ApiToken')
-    @patch('ripl.core.aggregation.twitter_oauth.memcache')
+    @patch('ripl.core.aggregation.client.twitter.Http.request')
+    @patch('ripl.core.aggregation.client.twitter.ApiToken')
+    @patch('ripl.core.aggregation.client.twitter.memcache')
     def test_force_refresh(self, mock_memcache, mock_api_token, mock_request):
         """Ensure that we bypass caching when force_refresh is True."""
 
