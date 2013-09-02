@@ -1,9 +1,7 @@
-"""
-Initialize Flask app
-"""
+"""Initialize Flask app."""
 
-import boot
-boot.setup()
+import furious_router
+furious_router.setup_lib_path()
 
 from ripl import create_app
 
