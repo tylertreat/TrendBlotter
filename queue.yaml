@@ -1,0 +1,3 @@
+- name: trend-aggregator
+  rate: 100/s
+  bucket_size: 100
