@@ -1,0 +1,4 @@
+cron:
+- description: trend aggregation process
+  url: /aggregate
+  schedule: every 2 hours
