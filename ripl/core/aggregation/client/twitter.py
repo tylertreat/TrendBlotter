@@ -29,11 +29,12 @@ def get_trends_by_location(location):
     specified as a WOEID.
     """
 
-    resp, content = _make_authorized_get(TRENDS_ENDPOINT)
+    resp, content = _make_authorized_get(TRENDS_ENDPOINT % location)
 
     if resp.status != 200:
         raise ApiRequestException(
-            '%s request failed (status %d)' % (TRENDS_ENDPOINT, resp.status))
+            '%s request failed (status %d)' % (TRENDS_ENDPOINT, resp.status),
+            resp.status)
 
     content = json.loads(content)
     trends = content[0].get('trends', [])
@@ -52,15 +53,10 @@ def get_locations_with_trends():
     if resp.status != 200:
         raise ApiRequestException(
             '%s request failed (status %d)' % (TRENDS_LOCATIONS_ENDPOINT,
-                                               resp.status))
+                                               resp.status),
+            resp.status)
 
-    locations = json.loads(content)
-
-    return [Location(id=loc['woeid'], name=loc['name'],
-                     type_name=loc['placeType']['name'],
-                     type_code=loc['placeType']['code'],
-                     parent_id=loc['parentid'], country=loc['country'],
-                     country_code=loc['countryCode']) for loc in locations]
+    return json.loads(content)
 
 
 def _make_authorized_get(endpoint):
@@ -71,7 +67,7 @@ def _make_authorized_get(endpoint):
                               settings.TWITTER_CONSUMER_SECRET)
 
     if not token:
-        raise ApiRequestException('Unable to retrieve bearer token')
+        raise ApiRequestException('Unable to retrieve bearer token', 0)
 
     return http.request('%s%s' % (API, endpoint), 'GET',
                         headers={'Authorization': 'Bearer %s' % token})

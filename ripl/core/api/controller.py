@@ -5,6 +5,7 @@ from flask import render_template
 from furious.async import Async
 
 from ripl.core.api.blueprint import blueprint
+from ripl.core.aggregation import AGGREGATION_QUEUE
 from ripl.core.aggregation.aggregator import aggregate
 
 
@@ -27,7 +28,7 @@ def aggregate_trends():
     intended to be called by a cron job.
     """
 
-    Async(target=aggregate).start()
+    Async(target=aggregate, queue=AGGREGATION_QUEUE).start()
     logging.debug('Inserted aggregate Async')
 
     return '', 200

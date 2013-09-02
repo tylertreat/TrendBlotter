@@ -3,8 +3,14 @@ from datetime import datetime
 from google.appengine.ext import ndb
 
 
+AGGREGATION_QUEUE = 'trend-aggregator'
+
+
 class ApiRequestException(Exception):
-    pass
+
+    def __init__(self, message, status):
+        self.status = status
+        super(ApiRequestException, self, message)
 
 
 class ApiToken(ndb.Model):
@@ -22,6 +28,9 @@ class Location(ndb.Model):
 
     # The "user-friendly" location name
     name = ndb.StringProperty(required=True)
+
+    # The WOEID of the location
+    woeid = ndb.IntegerProperty(required=True)
 
     # The "user-friendly" location type (e.g. town, country, etc.)
     type_name = ndb.StringProperty(indexed=False)

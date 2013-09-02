@@ -1,4 +1,5 @@
 import base64
+import json
 import unittest
 import urllib
 
@@ -138,21 +139,7 @@ class TestGetLocationsWithTrends(unittest.TestCase):
             import TRENDS_LOCATIONS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
-        self.assertEqual('Worldwide', actual[0].name)
-        self.assertEqual('Supername', actual[0].type_name)
-        self.assertEqual(19, actual[0].type_code)
-        self.assertEqual(0, actual[0].parent_id)
-        self.assertEqual('', actual[0].country)
-        self.assertEqual(1, actual[0].key.id())
-        self.assertEqual(None, actual[0].country_code)
-
-        self.assertEqual('Winnipeg', actual[1].name)
-        self.assertEqual('Town', actual[1].type_name)
-        self.assertEqual(7, actual[1].type_code)
-        self.assertEqual(23424775, actual[1].parent_id)
-        self.assertEqual('Canada', actual[1].country)
-        self.assertEqual(2972, actual[1].key.id())
-        self.assertEqual('CA', actual[1].country_code)
+        self.assertEqual(json.loads(content), actual)
 
 
 class TestMakeAuthorizedGet(unittest.TestCase):
