@@ -3,6 +3,10 @@ from datetime import datetime
 from google.appengine.ext import ndb
 
 
+class ApiRequestException(Exception):
+    pass
+
+
 class ApiToken(ndb.Model):
     """Stores the state of an OAuth2 bearer token for an API."""
 
