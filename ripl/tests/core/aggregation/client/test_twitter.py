@@ -19,10 +19,10 @@ class TestGetTrendsByLocation(unittest.TestCase):
         """
 
         mock_get.return_value = (Mock(status=500), None)
-        mock_location = Mock()
+        location = 1234
 
         with self.assertRaises(ApiRequestException) as ctx:
-            twitter.get_trends_by_location(mock_location)
+            twitter.get_trends_by_location(location)
 
         from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
 
@@ -66,11 +66,9 @@ class TestGetTrendsByLocation(unittest.TestCase):
 
         mock_get.return_value = (Mock(status=200), content)
 
-        woeid = 2972
-        mock_loc_key = Mock()
-        mock_loc_key.id.return_value = woeid
+        location = 2972
 
-        actual = twitter.get_trends_by_location(Mock(key=mock_loc_key))
+        actual = twitter.get_trends_by_location(location)
 
         from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
 

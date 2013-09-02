@@ -25,7 +25,9 @@ TRENDS_ENDPOINT = '/1.1/trends/place.json?id=%d'
 
 
 def get_trends_by_location(location):
-    """Fetch a list of the top 10 trending topics for the given Location."""
+    """Fetch a list of the top 10 trending topics for the given location,
+    specified as a WOEID.
+    """
 
     resp, content = _make_authorized_get(TRENDS_ENDPOINT)
 
@@ -37,7 +39,7 @@ def get_trends_by_location(location):
     trends = content[0].get('trends', [])
 
     return [Trend(name=str(trend['name']),
-            location=ndb.Key(Location, location.key.id())) for trend in trends]
+            location=ndb.Key(Location, location)) for trend in trends]
 
 
 def get_locations_with_trends():
