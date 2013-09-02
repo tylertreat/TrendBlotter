@@ -7,10 +7,13 @@ import logging
 import urllib
 
 from google.appengine.api import memcache
+from google.appengine.ext import ndb
 
 from ripl import settings
 from ripl.core.aggregation import ApiRequestException
 from ripl.core.aggregation import ApiToken
+from ripl.core.aggregation import Location
+from ripl.core.aggregation import Trend
 
 
 API = 'https://api.twitter.com'
@@ -18,6 +21,23 @@ TWITTER_API_TOKEN = 'twitter_api_token'
 
 BEARER_TOKEN_ENDPOINT = '/oauth2/token'
 TRENDS_LOCATIONS_ENDPOINT = '/1.1/trends/available.json'
+TRENDS_ENDPOINT = '/1.1/trends/place.json?id=%d'
+
+
+def get_trends_by_location(location):
+    """Fetch a list of the top 10 trending topics for the given Location."""
+
+    resp, content = _make_authorized_get(TRENDS_ENDPOINT)
+
+    if resp.status != 200:
+        raise ApiRequestException(
+            '%s request failed (status %d)' % (TRENDS_ENDPOINT, resp.status))
+
+    content = json.loads(content)
+    trends = content[0].get('trends', [])
+
+    return [Trend(name=str(trend['name']),
+            location=ndb.Key(Location, location.key.id())) for trend in trends]
 
 
 def get_locations_with_trends():
@@ -32,7 +52,13 @@ def get_locations_with_trends():
             '%s request failed (status %d)' % (TRENDS_LOCATIONS_ENDPOINT,
                                                resp.status))
 
-    return json.loads(content)
+    locations = json.loads(content)
+
+    return [Location(id=loc['woeid'], name=loc['name'],
+                     type_name=loc['placeType']['name'],
+                     type_code=loc['placeType']['code'],
+                     parent_id=loc['parentid'], country=loc['country'],
+                     country_code=loc['countryCode']) for loc in locations]
 
 
 def _make_authorized_get(endpoint):

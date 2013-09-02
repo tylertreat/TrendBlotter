@@ -10,6 +10,77 @@ from ripl.core.aggregation import ApiRequestException
 from ripl.core.aggregation.client import twitter
 
 
+class TestGetTrendsByLocation(unittest.TestCase):
+
+    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    def test_bad_response(self, mock_get):
+        """Ensure that an ApiRequestException is raised when a non-200 status
+        code is returned from Twitter.
+        """
+
+        mock_get.return_value = (Mock(status=500), None)
+        mock_location = Mock()
+
+        with self.assertRaises(ApiRequestException) as ctx:
+            twitter.get_trends_by_location(mock_location)
+
+        from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
+
+        mock_get.assert_called_once_with(TRENDS_ENDPOINT)
+        self.assertIsInstance(ctx.exception, ApiRequestException)
+
+    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    def test_happy_path(self, mock_get):
+        """Ensure that the correct value is returned on a successful request.
+        """
+
+        content = \
+            """[
+                    {
+                        "trends": [
+                            {
+                                "name": "#ReasonsToLive",
+                                "url": "http://twitter.com/search?q=%23ReasonsToLive",
+                                "promoted_content": null,
+                                "query": "%23ReasonsToLive",
+                                "events": null
+                            },
+                            {
+                                "name": "#BenjLexieMarjLoveTriangle",
+                                "url": "http://twitter.com/search?q=%23BenjLexieMarjLoveTriangle",
+                                "promoted_content": null,
+                                "query": "%23BenjLexieMarjLoveTriangle",
+                                "events": null
+                            }
+                        ],
+                        "as_of": "2013-09-02T07:14:24Z",
+                        "created_at": "2013-09-02T06:56:28Z",
+                        "locations": [
+                            {
+                                "name": "Winnipeg",
+                                "woeid": 2972
+                            }
+                        ]
+                    }
+                ]"""
+
+        mock_get.return_value = (Mock(status=200), content)
+
+        woeid = 2972
+        mock_loc_key = Mock()
+        mock_loc_key.id.return_value = woeid
+
+        actual = twitter.get_trends_by_location(Mock(key=mock_loc_key))
+
+        from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
+
+        mock_get.assert_called_once_with(TRENDS_ENDPOINT)
+        self.assertEqual('#ReasonsToLive', actual[0].name)
+        self.assertEqual(2972, actual[0].location.id())
+        self.assertEqual('#BenjLexieMarjLoveTriangle', actual[1].name)
+        self.assertEqual(2972, actual[1].location.id())
+
+
 class TestGetLocationsWithTrends(unittest.TestCase):
 
     @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
@@ -60,6 +131,7 @@ class TestGetLocationsWithTrends(unittest.TestCase):
                             "countryCode": "CA"
                         }
                     ]"""
+
         mock_get.return_value = (Mock(status=200), content)
 
         actual = twitter.get_locations_with_trends()
@@ -68,33 +140,21 @@ class TestGetLocationsWithTrends(unittest.TestCase):
             import TRENDS_LOCATIONS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
-        expected = \
-            [{
-                'name': 'Worldwide',
-                'placeType': {
-                    'code': 19,
-                    'name': 'Supername'
-                },
-                'url': 'http://where.yahooapis.com/v1/place/1',
-                'parentid': 0,
-                'country': '',
-                'woeid': 1,
-                'countryCode': None
-            },
-            {
-                'name': 'Winnipeg',
-                'placeType': {
-                    'code': 7,
-                    'name': 'Town'
-                },
-                'url': 'http://where.yahooapis.com/v1/place/2972',
-                'parentid': 23424775,
-                'country': 'Canada',
-                'woeid': 2972,
-                'countryCode': 'CA'
-            }]
+        self.assertEqual('Worldwide', actual[0].name)
+        self.assertEqual('Supername', actual[0].type_name)
+        self.assertEqual(19, actual[0].type_code)
+        self.assertEqual(0, actual[0].parent_id)
+        self.assertEqual('', actual[0].country)
+        self.assertEqual(1, actual[0].key.id())
+        self.assertEqual(None, actual[0].country_code)
 
-        self.assertEqual(expected, actual)
+        self.assertEqual('Winnipeg', actual[1].name)
+        self.assertEqual('Town', actual[1].type_name)
+        self.assertEqual(7, actual[1].type_code)
+        self.assertEqual(23424775, actual[1].parent_id)
+        self.assertEqual('Canada', actual[1].country)
+        self.assertEqual(2972, actual[1].key.id())
+        self.assertEqual('CA', actual[1].country_code)
 
 
 class TestMakeAuthorizedGet(unittest.TestCase):
