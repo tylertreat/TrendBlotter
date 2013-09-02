@@ -42,5 +42,9 @@ handlers:
 - url: /static
   static_dir: ripl/static
 
+- url: /aggregate
+  script: main.app
+  login: admin
+
 - url: .*
   script: main.app
