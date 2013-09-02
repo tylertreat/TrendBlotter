@@ -1,4 +1,8 @@
+import logging
+
 from flask import render_template
+
+from furious.async import Async
 
 from ripl.core.api.blueprint import blueprint
 from ripl.core.aggregation.aggregator import aggregate
@@ -19,10 +23,12 @@ def index():
 
 @blueprint.route('/aggregate')
 def aggregate_trends():
-    """Kick off the trend aggregation process. This is intended to be called by
-    a cron job.
+    """Insert a task that will Kick off the trend aggregation process. This is
+    intended to be called by a cron job.
     """
 
-    aggregate()
+    Async(target=aggregate).start()
+    logging.debug('Inserted aggregate Async')
+
     return '', 200
 
