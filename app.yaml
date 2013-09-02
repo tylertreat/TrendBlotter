@@ -13,8 +13,6 @@ skip_files: |
  (.*\.py[co])|
  (.*/RCS/.*)|
  (\..*)|
- (settingslocal\.py)|
- (node_modules)|
  )$
 
 builtins:
