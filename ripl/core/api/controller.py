@@ -2,7 +2,6 @@ from flask import render_template
 
 from ripl.core.api.blueprint import blueprint
 from ripl.core.aggregation.aggregator import aggregate
-from ripl.core.decorators import admin_required
 
 
 # Error handlers
@@ -19,11 +18,11 @@ def index():
 
 
 @blueprint.route('/aggregate')
-@admin_required
 def aggregate_trends():
     """Kick off the trend aggregation process. This is intended to be called by
     a cron job.
     """
 
     aggregate()
+    return '', 200
 
