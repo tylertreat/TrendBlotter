@@ -1,0 +1,5 @@
+indexes:
+- kind: Trend
+  properties:
+  - name: location
+  - name: timestamp
