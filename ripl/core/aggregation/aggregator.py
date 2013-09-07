@@ -73,6 +73,7 @@ def aggregate_for_locations(locations):
 
             # Fail fast if we've hit the request window limit
             if e.status == 429:
+                logging.warn('Request limit window hit, aborting')
                 Abort()
 
 
