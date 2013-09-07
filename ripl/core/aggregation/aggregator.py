@@ -49,6 +49,8 @@ def aggregate_for_locations(locations):
 
     locations = location_dicts_to_entities(locations)
 
+    # TODO: there's no reason to put locations that already exist since they
+    # won't change.
     ndb.put_multi(locations)
 
     for location in locations:
