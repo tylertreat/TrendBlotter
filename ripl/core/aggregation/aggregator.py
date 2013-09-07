@@ -33,6 +33,10 @@ def aggregate():
     locations = twitter.get_locations_with_trends()
     logging.debug('Fetched %d locations from Twitter' % len(locations))
 
+    # QUESTION: should we only collect data for countries? Including fine-
+    # grained data for cities causes the process to take much longer and
+    # takes a lot more datastore writes.
+
     # Fan out on locations, 15 per batch. Due to Twitter's 15 minute request
     # window, we space these batches out by 16 minutes.
     with context.new() as ctx:
