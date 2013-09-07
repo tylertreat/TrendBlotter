@@ -10,11 +10,9 @@ Some important considerations:
 
 import logging
 
-from google.appengine.api import memcache
 from google.appengine.ext import ndb
 
 from furious import context
-from furious.async import Async
 from furious.errors import Abort
 
 from ripl.core.aggregation import AGGREGATION_QUEUE
@@ -23,8 +21,8 @@ from ripl.core.aggregation import Location
 from ripl.core.aggregation.client import twitter
 
 
+BATCH_SIZE = 14
 THROTTLE_TIME = 60 * 20
-THROTTLE_SWITCH = 'throttle'
 
 
 def aggregate():
@@ -33,51 +31,55 @@ def aggregate():
     logging.debug('Aggregation process started')
 
     locations = twitter.get_locations_with_trends()
+    logging.debug('Fetched %d locations from Twitter' % len(locations))
 
-    # Fan out on Locations
+    # Fan out on locations, 14 per batch. Due to Twitter's 15 minute request
+    # window, we space these batches out by 20 minutes.
     with context.new() as ctx:
-        for location in locations:
-            ctx.add(target=aggregate_for_location, args=(location,),
-                    queue=AGGREGATION_QUEUE)
+        for i, batch in enumerate(chunk(locations, BATCH_SIZE)):
+            ctx.add(target=aggregate_for_locations, args=(batch,),
+                    queue=AGGREGATION_QUEUE,
+                    task_args={'countdown': THROTTLE_TIME * i})
 
 
-def aggregate_for_location(loc):
-    """Collect trend data for the given location, specified as a dict, and
+def aggregate_for_locations(locations):
+    """Collect trend data for the given locations, specified as dicts, and
     persist it to the datastore.
     """
 
-    if memcache.get(THROTTLE_SWITCH):
-        # We're being throttled, so insert a throttled task
-        logging.warn('Request limit reached, inserting throttle task')
-        Async(target=aggregate_for_location, args=(loc,),
-              queue=AGGREGATION_QUEUE,
-              task_args={'countdown': THROTTLE_TIME}).start()
-        Abort()
+    locations = location_dicts_to_entities(locations)
 
-    location = Location(id=loc['woeid'], name=loc['name'], woeid=loc['woeid'],
-                        type_name=loc['placeType']['name'],
-                        type_code=loc['placeType']['code'],
-                        parent_id=loc['parentid'], country=loc['country'],
-                        country_code=loc['countryCode'])
+    ndb.put_multi(locations)
 
-    ndb.put_async(location)
+    for location in locations:
+        try:
+            trends = twitter.get_trends_by_location(location.woeid)
+            if trends:
+                logging.debug('Persisting %d trends for %s' % (len(trends),
+                                                               location.name))
+                ndb.put_multi(trends)
+        except ApiRequestException as e:
+            logging.error('Could not fetch trends for %s' % location.name)
+            logging.exception(e)
 
-    try:
-        trends = twitter.get_trends_by_location(location.woeid)
-        if trends:
-            logging.debug('Persisting %d trends for %s' % (len(trends),
-                                                           location.name))
-            ndb.put_multi_async(trends)
-    except ApiRequestException as e:
-        if e.status == 429:
-            # Hit request window limit, so insert a throttled task
-            logging.warn('Request limit reached, inserting throttle task')
-            Async(target=aggregate_for_location, args=(loc,),
-                  queue=AGGREGATION_QUEUE,
-                  task_args={'countdown': THROTTLE_TIME}).start()
-            memcache.set(THROTTLE_SWITCH, True, time=THROTTLE_TIME)
-            Abort()
+            # Fail fast if we've hit the request window limit
+            if e.status == 429:
+                Abort()
 
-        logging.error('Could not fetch trends for %s' % location.name)
-        logging.exception(e)
+
+def chunk(the_list, chunk_size):
+    """Chunks the given list into lists of size chunk_size."""
+
+    for i in xrange(0, len(the_list), chunk_size):
+        yield the_list[i:i + chunk_size]
+
+
+def location_dicts_to_entities(locations):
+    """Convert the list of location dicts to location entities."""
+
+    return [Location(id=loc['woeid'], name=loc['name'], woeid=loc['woeid'],
+                     type_name=loc['placeType']['name'],
+                     type_code=loc['placeType']['code'],
+                     parent_id=loc['parentid'], country=loc['country'],
+                     country_code=loc['countryCode']) for loc in locations]
 
