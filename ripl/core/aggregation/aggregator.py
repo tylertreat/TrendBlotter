@@ -1,3 +1,13 @@
+"""This module is responsible for aggregating trend data from social media.
+Currently, Twitter is the only data source but others may be added ad hoc.
+
+Some important considerations:
+    - Twitter limits applications to 15 API calls per 15 minutes for the trends
+      and locations endpoints. We need to avoid hitting this ceiling, which
+      means we can't simply fetch all locations and fan out on them in
+      parallel.
+"""
+
 import logging
 
 from google.appengine.api import memcache
