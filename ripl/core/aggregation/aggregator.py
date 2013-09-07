@@ -21,8 +21,8 @@ from ripl.core.aggregation import Location
 from ripl.core.aggregation.client import twitter
 
 
-BATCH_SIZE = 14
-THROTTLE_TIME = 60 * 20
+BATCH_SIZE = 15
+THROTTLE_TIME = 60 * 16
 
 
 def aggregate():
@@ -33,8 +33,8 @@ def aggregate():
     locations = twitter.get_locations_with_trends()
     logging.debug('Fetched %d locations from Twitter' % len(locations))
 
-    # Fan out on locations, 14 per batch. Due to Twitter's 15 minute request
-    # window, we space these batches out by 20 minutes.
+    # Fan out on locations, 15 per batch. Due to Twitter's 15 minute request
+    # window, we space these batches out by 16 minutes.
     with context.new() as ctx:
         for i, batch in enumerate(chunk(locations, BATCH_SIZE)):
             ctx.add(target=aggregate_for_locations, args=(batch,),
