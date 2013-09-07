@@ -39,7 +39,7 @@ def get_trends_by_location(location):
     content = json.loads(content)
     trends = content[0].get('trends', [])
 
-    return [Trend(name=str(trend['name']),
+    return [Trend(name=trend['name'].encode('utf-8'),
             location=ndb.Key(Location, location)) for trend in trends]
 
 
