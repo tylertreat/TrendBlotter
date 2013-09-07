@@ -24,18 +24,19 @@ from ripl.core.aggregation.client import twitter
 BATCH_SIZE = 15
 THROTTLE_TIME = 60 * 16
 
+# Places to exclude from aggregation, see
+# http://developer.yahoo.com/geo/geoplanet/guide/concepts.html#placetypes
+EXCLUDE_TYPES = [7, 8, 9, 10, 11, 22, 31]
+
 
 def aggregate():
     """Kick off the trend aggregation process."""
 
     logging.debug('Aggregation process started')
 
-    locations = twitter.get_locations_with_trends()
+    # Only aggregate data for coarse-grained locations, e.g. countries
+    locations = twitter.get_locations_with_trends(exclude=EXCLUDE_TYPES)
     logging.debug('Fetched %d locations from Twitter' % len(locations))
-
-    # QUESTION: should we only collect data for countries? Including fine-
-    # grained data for cities causes the process to take much longer and
-    # takes a lot more datastore writes.
 
     # Fan out on locations, 15 per batch. Due to Twitter's 15 minute request
     # window, we space these batches out by 16 minutes.
@@ -44,6 +45,8 @@ def aggregate():
             ctx.add(target=aggregate_for_locations, args=(batch,),
                     queue=AGGREGATION_QUEUE,
                     task_args={'countdown': THROTTLE_TIME * i})
+
+    logging.debug('Inserted %d fan-out tasks' % ctx.insert_success)
 
 
 def aggregate_for_locations(locations):
