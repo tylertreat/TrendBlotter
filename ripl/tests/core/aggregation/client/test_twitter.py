@@ -141,6 +141,49 @@ class TestGetLocationsWithTrends(unittest.TestCase):
         mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
         self.assertEqual(json.loads(content), actual)
 
+    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    def test_happy_path_with_excludes(self, mock_get):
+        """Ensure that the correct value is returned on a successful request
+        with excludes.
+        """
+
+        content = """[
+                        {
+                            "name": "Worldwide",
+                            "placeType": {
+                                "code": 19,
+                                "name": "Supername"
+                            },
+                            "url": "http://where.yahooapis.com/v1/place/1",
+                            "parentid": 0,
+                            "country": "",
+                            "woeid": 1,
+                            "countryCode": null
+                        },
+                        {
+                            "name": "Winnipeg",
+                            "placeType": {
+                                "code": 7,
+                                "name": "Town"
+                            },
+                            "url": "http://where.yahooapis.com/v1/place/2972",
+                            "parentid": 23424775,
+                            "country": "Canada",
+                            "woeid": 2972,
+                            "countryCode": "CA"
+                        }
+                    ]"""
+
+        mock_get.return_value = (Mock(status=200), content)
+
+        actual = twitter.get_locations_with_trends(exclude=[7])
+
+        from ripl.core.aggregation.client.twitter \
+            import TRENDS_LOCATIONS_ENDPOINT
+
+        mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
+        self.assertEqual(json.loads(content)[:1], actual)
+
 
 class TestMakeAuthorizedGet(unittest.TestCase):
 

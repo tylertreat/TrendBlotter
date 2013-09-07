@@ -43,10 +43,14 @@ def get_trends_by_location(location):
             location=ndb.Key(Location, location)) for trend in trends]
 
 
-def get_locations_with_trends():
+def get_locations_with_trends(exclude=None):
     """Fetch a list of locations that Twitter has trending topic information
-    for.
+    for. The exclude kwarg can be used to pass in a list of WOEID place types
+    to exclude from the results.
     """
+
+    if not isinstance(exclude, list):
+        exclude = []
 
     resp, content = _make_authorized_get(TRENDS_LOCATIONS_ENDPOINT)
 
@@ -56,7 +60,9 @@ def get_locations_with_trends():
                                                resp.status),
             resp.status)
 
-    return json.loads(content)
+    locations = json.loads(content)
+
+    return [l for l in locations if l['placeType']['code'] not in exclude]
 
 
 def _make_authorized_get(endpoint):
