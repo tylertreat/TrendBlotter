@@ -90,3 +90,8 @@ class TestAggregate(unittest.TestCase):
         mock_context.new.assert_called_once_with()
         self.assertEqual(2, context.add.call_count)
 
+
+class TestAggregateForLocations(unittest.TestCase):
+    # TODO
+    pass
+
