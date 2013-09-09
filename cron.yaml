@@ -1,4 +1,4 @@
 cron:
 - description: trend aggregation process
   url: /aggregate
-  schedule: every 12 hours from 03:00 to 02:59
+  schedule: every 4 hours
