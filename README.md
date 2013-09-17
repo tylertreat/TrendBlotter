@@ -1,6 +1,6 @@
 ripl
 =========
-What's trending on the internet.
+This is what's making waves.
 
 Getting Started
 ---------------
