@@ -1,9 +1,8 @@
 require.config({
     paths: {
-        jquery: 'lib/jquery-1.9.1.min',
+        jquery: 'lib/jquery-1.10.2.min',
         underscore: 'lib/underscore-min',
-        backbone: 'lib/backbone-min',
-        bootstrap: 'lib/bootstrap-2.3.2',
+        backbone: 'lib/backbone-min'
     },
     shim: {
         backbone: {
@@ -12,10 +11,6 @@ require.config({
         },
         underscore: {
             exports: '_'
-        }, 
-        bootstrap: {
-            deps: ["jquery"],
-            exports: 'bootstrap'
         }
     }
 });
@@ -24,7 +19,6 @@ require([
     'jquery',
     'underscore',
     'backbone',
-    'bootstrap',
-], function($, _, Backbone, Bootstrap){
+], function($, _, Backbone){
     // App initialization logic here
 });
