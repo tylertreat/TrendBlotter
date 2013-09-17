@@ -16,3 +16,4 @@ gaepdb.py
 lib/external
 
 settingslocal.py
+ripl/static/js/main-built.js
