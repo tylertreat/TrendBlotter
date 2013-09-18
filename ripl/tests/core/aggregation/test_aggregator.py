@@ -8,6 +8,7 @@ from mock import patch
 from furious.errors import Abort
 
 from ripl.core.aggregation import ApiRequestException
+from ripl.core.aggregation import Location
 
 
 class TestAggregate(unittest.TestCase):
@@ -256,4 +257,63 @@ class TestChunk(unittest.TestCase):
             full.extend(group)
 
         self.assertEqual(the_list, full)
+
+
+class TestLocationDictsToEntities(unittest.TestCase):
+
+    def test_location_dicts_to_entities(self):
+        """Ensure that the list of location dicts is converted to a list of
+        location entities.
+        """
+        from ripl.core.aggregation.aggregator \
+            import _location_dicts_to_entities
+
+        locations = """[
+                        {
+                            "name": "worldwide",
+                            "placeType": {
+                                "code": 19,
+                                "name": "supername"
+                            },
+                            "url": "http://where.yahooapis.com/v1/place/1",
+                            "parentid": 0,
+                            "country": "",
+                            "woeid": 1,
+                            "countryCode": null
+                        },
+                        {
+                            "name": "mexico",
+                            "placeType": {
+                                "code": 12,
+                                "name": "country"
+                            },
+                            "url": "http://where.yahooapis.com/v1/place/23424900",
+                            "parentid": 1,
+                            "country": "mexico",
+                            "woeid": 23424900,
+                            "countryCode": "mx"
+                        }
+                    ]"""
+
+        locations = json.loads(locations)
+
+        actual = _location_dicts_to_entities(locations)
+
+        self.assertIsInstance(actual[0], Location)
+        self.assertEqual('worldwide', actual[0].name)
+        self.assertEqual(19, actual[0].type_code)
+        self.assertEqual('supername', actual[0].type_name)
+        self.assertEqual(0, actual[0].parent_id)
+        self.assertEqual('', actual[0].country)
+        self.assertEqual(None, actual[0].country_code)
+        self.assertEqual(1, actual[0].woeid)
+
+        self.assertIsInstance(actual[1], Location)
+        self.assertEqual('mexico', actual[1].name)
+        self.assertEqual(12, actual[1].type_code)
+        self.assertEqual('country', actual[1].type_name)
+        self.assertEqual(1, actual[1].parent_id)
+        self.assertEqual('mexico', actual[1].country)
+        self.assertEqual('mx', actual[1].country_code)
+        self.assertEqual(23424900, actual[1].woeid)
 
