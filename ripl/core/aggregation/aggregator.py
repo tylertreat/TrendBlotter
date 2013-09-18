@@ -54,7 +54,7 @@ def aggregate_for_locations(locations):
     persist it to the datastore.
     """
 
-    locations = location_dicts_to_entities(locations)
+    locations = _location_dicts_to_entities(locations)
 
     # TODO: there's no reason to put locations that already exist since they
     # won't change.
@@ -84,7 +84,7 @@ def chunk(the_list, chunk_size):
         yield the_list[i:i + chunk_size]
 
 
-def location_dicts_to_entities(locations):
+def _location_dicts_to_entities(locations):
     """Convert the list of location dicts to location entities."""
 
     return [Location(id=loc['woeid'], name=loc['name'], woeid=loc['woeid'],
