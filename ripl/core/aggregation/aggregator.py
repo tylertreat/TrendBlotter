@@ -80,6 +80,10 @@ def aggregate_for_locations(locations):
 def chunk(the_list, chunk_size):
     """Chunks the given list into lists of size chunk_size."""
 
+    if not the_list or chunk_size <= 0:
+        yield []
+        return
+
     for i in xrange(0, len(the_list), chunk_size):
         yield the_list[i:i + chunk_size]
 
