@@ -6,7 +6,7 @@ from furious.async import Async
 
 from ripl.core.api.blueprint import blueprint
 from ripl.core.aggregation import AGGREGATION_QUEUE
-from ripl.core.aggregation.aggregator import aggregate
+from ripl.core.aggregation.trends import aggregate
 
 
 # Error handlers

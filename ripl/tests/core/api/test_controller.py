@@ -9,7 +9,7 @@ class TestAggregateTrends(unittest.TestCase):
     def test_aggregate(self, mock_async):
         """Ensure aggregate_trends inserts an aggregate task."""
         from ripl.core.aggregation import AGGREGATION_QUEUE
-        from ripl.core.aggregation.aggregator import aggregate
+        from ripl.core.aggregation.trends import aggregate
         from ripl.core.api.controller import aggregate_trends
 
         mock_async.return_value = mock_async
