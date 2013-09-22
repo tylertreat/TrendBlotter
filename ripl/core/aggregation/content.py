@@ -72,6 +72,7 @@ def aggregate_content(trend, location, timestamp):
 
     # Update the Trend with content
     if content:
+        logging.debug('Adding %d articles to %s' % (len(content), trend))
         trend_entity = Trend.get_by_id(
             '%s-%s-%s' % (trend, location, timestamp))
         trend_entity.content = content
