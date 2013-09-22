@@ -56,7 +56,7 @@ def aggregate_content(trend, location, timestamp):
                 entries = feedparser.parse(feed_url).get('entries', [])
                 memcache.set('%s-%s' % (source, feed_name), entries, time=3600)
 
-            source_content = [{'link': entry['link'],
+            source_content = [{'link': entry['link'], 'source': source,
                                'score': _calculate_score(trend, entry)}
                               for entry in entries if 'link' in entry]
 
