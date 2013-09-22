@@ -41,9 +41,9 @@ def get_trends_by_location(location):
     content = json.loads(content)
     trends = content[0].get('trends', [])
     timestamp = datetime.now()
-    unix_time = time.mktime(timestamp.timetuple())
+    utime = time.mktime(timestamp.timetuple())
 
-    return [Trend(id='%s-%s-%s' % (trend['name'], location, unix_time),
+    return [Trend(id='%s-%s-%s' % (trend['name'].lstrip('#'), location, utime),
                   name=trend['name'].encode('utf-8'), timestamp=timestamp,
                   location=ndb.Key(Location, location)) for trend in trends]
 
