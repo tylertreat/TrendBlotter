@@ -57,11 +57,11 @@ def aggregate_content(trend, location, timestamp):
                 memcache.set('%s-%s' % (source, feed_name), entries, time=3600)
 
             source_content = [{'link': entry['link'],
-                               'score': _calculate_score(entry)}
+                               'score': _calculate_score(trend, entry)}
                               for entry in entries if 'link' in entry]
 
             # Remove irrelevant entries and add the rest to the list
-            content.extend([e for e in source_content if e[1] > 0])
+            content.extend([e for e in source_content if e['score'] > 0])
 
     for entry in content:
         image_url = _find_content_image(entry['link'])
@@ -135,8 +135,7 @@ def _find_content_image(url):
     response = urllib2.urlopen(image_url)
     content = response.read()
 
-    if not content:
-        return None
+    return content
 
 
 def _find_content_image_url(url):
@@ -149,7 +148,7 @@ def _find_content_image_url(url):
     content = response.read()
 
     if content_type and 'html' in content_type and content:
-        soup = BeautifulSoup.BeautifulSoup(content)
+        soup = BeautifulSoup(content)
     else:
         return None
 
