@@ -17,8 +17,10 @@ from furious.errors import Abort
 
 from ripl.core.aggregation import AGGREGATION_QUEUE
 from ripl.core.aggregation import ApiRequestException
+from ripl.core.aggregation import CONTENT_QUEUE
 from ripl.core.aggregation import Location
 from ripl.core.aggregation.client import twitter
+from ripl.core.aggregation.content import aggregate_content
 
 
 BATCH_SIZE = 15
@@ -67,6 +69,8 @@ def aggregate_for_locations(locations):
                 logging.debug('Persisting %d trends for %s' % (len(trends),
                                                                location.name))
                 ndb.put_multi(trends)
+                _aggregate_trend_content(trends, location)
+
         except ApiRequestException as e:
             logging.error('Could not fetch trends for %s' % location.name)
             logging.exception(e)
@@ -75,6 +79,15 @@ def aggregate_for_locations(locations):
             if e.status == 429:
                 logging.warn('Request limit window hit, aborting')
                 raise Abort()
+
+
+def _aggregate_trend_content(trends, location):
+    """Insert tasks to aggregate content for the given trends."""
+
+    with context.new() as ctx:
+        for trend in trends:
+            ctx.add(target=aggregate_content, queue=CONTENT_QUEUE,
+                    args=(trend.name, location.woeid, trend.unix_timestamp()))
 
 
 def chunk(the_list, chunk_size):

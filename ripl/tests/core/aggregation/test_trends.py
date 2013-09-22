@@ -168,7 +168,9 @@ class TestAggregateForLocations(unittest.TestCase):
 
         self.locations = json.loads(locations)
 
-    def test_happy_path(self, to_entities, get_trends, put_multi):
+    @patch('ripl.core.aggregation.trends._aggregate_trend_content')
+    def test_happy_path(self, aggregate_content, to_entities, get_trends,
+                        put_multi):
         """Ensure we persist Location and Trend entities."""
         from ripl.core.aggregation.trends import aggregate_for_locations
 
@@ -186,6 +188,8 @@ class TestAggregateForLocations(unittest.TestCase):
         expected = [call(mock_locations), call(mock_trends), call(mock_trends),
                     call(mock_trends), call(mock_trends), call(mock_trends)]
         self.assertEqual(expected, put_multi.call_args_list)
+        expected = [call(mock_trends, loc) for loc in mock_locations]
+        self.assertEqual(expected, aggregate_content.call_args_list)
 
     def test_abort_on_429(self, to_entities, get_trends, put_multi):
         """Ensure we bail if we get an HTTP 429 status code."""
