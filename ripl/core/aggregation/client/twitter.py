@@ -15,6 +15,7 @@ from ripl import settings
 from ripl.core.aggregation import ApiRequestException
 from ripl.core.aggregation import ApiToken
 from ripl.core.aggregation import Location
+from ripl.core.aggregation import scale_trend_rating
 from ripl.core.aggregation import Trend
 
 
@@ -40,12 +41,16 @@ def get_trends_by_location(location):
 
     content = json.loads(content)
     trends = content[0].get('trends', [])
+    trends.reverse()
     timestamp = datetime.now()
     utime = time.mktime(timestamp.timetuple())
 
-    return [Trend(id='%s-%s-%s' % (trend['name'].lstrip('#'), location, utime),
-                  name=trend['name'].encode('utf-8'), timestamp=timestamp,
-                  location=ndb.Key(Location, location)) for trend in trends]
+    return [Trend(id='%s-%s-%s' % (trend['name'].encode('utf-8').lstrip('#'),
+                                   location, utime),
+                  name=trend['name'].encode('utf-8').lstrip('#'),
+                  timestamp=timestamp, location=ndb.Key(Location, location),
+                  rating=scale_trend_rating(rating + 1))
+            for rating, trend in enumerate(trends)]
 
 
 def get_locations_with_trends(exclude=None):

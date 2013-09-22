@@ -58,10 +58,17 @@ class Trend(ndb.Model):
     location = ndb.KeyProperty(kind=Location, required=True)
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     name = ndb.StringProperty(required=True)
+    rating = ndb.FloatProperty(required=True)
     content = ndb.JsonProperty(indexed=False)
 
     def unix_timestamp(self):
         """Return the timestamp as Unix time."""
 
         return time.mktime(self.timestamp.timetuple())
+
+
+def scale_trend_rating(unscaled):
+    """Scale the given rating to the range [1, 100]."""
+
+    return (99 * (unscaled - 1)) / 9 + 1
 

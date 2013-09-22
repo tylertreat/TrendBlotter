@@ -14,6 +14,7 @@ from BeautifulSoup import BeautifulSoup
 import feedparser
 import ImageFile
 
+from ripl.core.aggregation import scale_trend_rating
 from ripl.core.aggregation import Trend
 
 
@@ -76,6 +77,8 @@ def aggregate_content(trend, location, timestamp):
         trend_entity = Trend.get_by_id(
             '%s-%s-%s' % (trend, location, timestamp))
         trend_entity.content = content
+        trend_entity.rating = scale_trend_rating(
+            trend_entity.rating + len(content))
         trend_entity.put()
 
 
