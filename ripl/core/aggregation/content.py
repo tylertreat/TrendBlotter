@@ -64,7 +64,7 @@ def aggregate_content(trend, location, timestamp):
             content.extend([e for e in source_content if e['score'] > 0])
 
     for entry in content:
-        image_url = _find_content_image(entry['link'])
+        image_url = _find_content_image_url(entry['link'])
         if not image_url:
             continue
 
@@ -121,21 +121,6 @@ def _get_image_size(uri):
     finally:
         if response:
             response.close()
-
-
-def _find_content_image(url):
-    """Find the best image to use for the given content URL. Returns None if a
-    suitable image cannot be found. The image is returned as a byte string.
-    """
-
-    image_url = _find_content_image_url(url)
-    if not image_url:
-        return None
-
-    response = urllib2.urlopen(image_url)
-    content = response.read()
-
-    return content
 
 
 def _find_content_image_url(url):
