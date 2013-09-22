@@ -31,6 +31,8 @@ libraries:
   version: "0.15"
 - name: webapp2
   version: latest
+- name: PIL
+  version: latest
 
 handlers:
 - url: /favicon.ico
