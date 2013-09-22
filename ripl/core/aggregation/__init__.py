@@ -1,9 +1,11 @@
 from datetime import datetime
+import time
 
 from google.appengine.ext import ndb
 
 
 AGGREGATION_QUEUE = 'trend-aggregator'
+CONTENT_QUEUE = 'content-aggregator'
 
 
 class ApiRequestException(Exception):
@@ -57,4 +59,9 @@ class Trend(ndb.Model):
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     name = ndb.StringProperty(required=True)
     content = ndb.JsonProperty(indexed=False)
+
+    def unix_timestamp(self):
+        """Return the timestamp as Unix time."""
+
+        return time.mktime(self.timestamp.timetuple())
 
