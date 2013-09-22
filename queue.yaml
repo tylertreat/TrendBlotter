@@ -1,4 +1,8 @@
 queue:
 - name: trend-aggregator
-  rate: 100/s
+  rate: 500/s
+  bucket_size: 100
+
+- name: content-aggregator
+  rate: 500/s
   bucket_size: 100
