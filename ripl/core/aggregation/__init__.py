@@ -56,4 +56,5 @@ class Trend(ndb.Model):
     location = ndb.KeyProperty(kind=Location, required=True)
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     name = ndb.StringProperty(required=True)
+    content = ndb.JsonProperty(indexed=False)
 
