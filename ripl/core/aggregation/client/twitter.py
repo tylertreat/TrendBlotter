@@ -1,9 +1,11 @@
 """This is a client that wraps Twitter's trends API."""
 
 import base64
+from datetime import datetime
 from httplib2 import Http
 import json
 import logging
+import time
 import urllib
 
 from google.appengine.api import memcache
@@ -38,9 +40,12 @@ def get_trends_by_location(location):
 
     content = json.loads(content)
     trends = content[0].get('trends', [])
+    timestamp = datetime.now()
+    unix_time = time.mktime(timestamp.timetuple())
 
-    return [Trend(name=trend['name'].encode('utf-8'),
-            location=ndb.Key(Location, location)) for trend in trends]
+    return [Trend(id='%s-%s-%s' % (trend['name'], location, unix_time),
+                  name=trend['name'].encode('utf-8'), timestamp=timestamp,
+                  location=ndb.Key(Location, location)) for trend in trends]
 
 
 def get_locations_with_trends(exclude=None):
