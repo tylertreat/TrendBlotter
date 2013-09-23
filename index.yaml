@@ -10,3 +10,5 @@ indexes:
   - name: location
   - name: rating
     direction: desc
+  - name: timestamp
+    direction: desc
