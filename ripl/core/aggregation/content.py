@@ -10,9 +10,9 @@ import urlparse
 
 from google.appengine.api import memcache
 
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 import feedparser
-import ImageFile
+from PIL import ImageFile
 
 from ripl.core.aggregation import scale_trend_rating
 from ripl.core.aggregation import Trend

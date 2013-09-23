@@ -11,5 +11,5 @@ webob
 itsdangerous
 git+git://github.com/WebFilings/furious.git#egg=furious
 feedparser
-pil
-beautifulsoup
+beautifulsoup4
+pillow
