@@ -91,6 +91,9 @@ def get_trend_for_location(location):
         Trend.location == ndb.Key('Location', location)
     )).order(-Trend.rating).fetch()
 
+    if not trends:
+        return None
+
     return trends[0]
 
 

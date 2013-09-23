@@ -1,4 +1,5 @@
 from datetime import datetime
+from operator import itemgetter
 import time
 
 from google.appengine.ext import ndb
@@ -72,6 +73,14 @@ class Trend(ndb.Model):
         """Return the timestamp as Unix time."""
 
         return time.mktime(self.timestamp.timetuple())
+
+    def best_content(self):
+        """Return the highest scored content for this Trend."""
+
+        if not self.content:
+            return None
+
+        return sorted(self.content, key=itemgetter('score'), reverse=True)[0]
 
 
 def scale_trend_rating(unscaled):
