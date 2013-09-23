@@ -59,7 +59,14 @@ class Trend(ndb.Model):
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     name = ndb.StringProperty(required=True)
     rating = ndb.FloatProperty(required=True)
-    content = ndb.JsonProperty(indexed=False)
+    content = ndb.JsonProperty(compressed=True)
+    has_content = ndb.BooleanProperty()
+
+    def _pre_put_hook(self):
+        if self.content:
+            self.has_content = True
+        else:
+            self.has_content = False
 
     def unix_timestamp(self):
         """Return the timestamp as Unix time."""
