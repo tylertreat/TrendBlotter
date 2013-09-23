@@ -19,6 +19,7 @@ from ripl.core.aggregation import AGGREGATION_QUEUE
 from ripl.core.aggregation import ApiRequestException
 from ripl.core.aggregation import CONTENT_QUEUE
 from ripl.core.aggregation import Location
+from ripl.core.aggregation import Trend
 from ripl.core.aggregation.client import twitter
 from ripl.core.aggregation.content import aggregate_content
 
@@ -64,7 +65,8 @@ def aggregate_for_locations(locations):
 
     for location in locations:
         try:
-            trends = twitter.get_trends_by_location(location.woeid)
+            trends = twitter.get_trends_by_location(location.name,
+                                                    location.woeid)
             if trends:
                 logging.debug('Persisting %d trends for %s' % (len(trends),
                                                                location.name))
@@ -81,13 +83,24 @@ def aggregate_for_locations(locations):
                 raise Abort()
 
 
+def get_trend_for_location(location):
+    """Fetch the best trend for the given location."""
+
+    trends = Trend.query(ndb.AND(
+        Trend.has_content == True,
+        Trend.location == ndb.Key('Location', location)
+    )).order(-Trend.rating).fetch()
+
+    return trends[0]
+
+
 def _aggregate_trend_content(trends, location):
     """Insert tasks to aggregate content for the given trends."""
 
     with context.new() as ctx:
         for trend in trends:
             ctx.add(target=aggregate_content, queue=CONTENT_QUEUE,
-                    args=(trend.name, location.woeid, trend.unix_timestamp()))
+                    args=(trend.name, location.name, trend.unix_timestamp()))
 
 
 def chunk(the_list, chunk_size):
@@ -104,7 +117,7 @@ def chunk(the_list, chunk_size):
 def _location_dicts_to_entities(locations):
     """Convert the list of location dicts to location entities."""
 
-    return [Location(id=loc['woeid'], name=loc['name'], woeid=loc['woeid'],
+    return [Location(id=loc['name'], name=loc['name'], woeid=loc['woeid'],
                      type_name=loc['placeType']['name'],
                      type_code=loc['placeType']['code'],
                      parent_id=loc['parentid'], country=loc['country'],

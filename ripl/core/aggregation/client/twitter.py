@@ -27,30 +27,34 @@ TRENDS_LOCATIONS_ENDPOINT = '/1.1/trends/available.json'
 TRENDS_ENDPOINT = '/1.1/trends/place.json?id=%d'
 
 
-def get_trends_by_location(location):
+def get_trends_by_location(location_name, location_woeid):
     """Fetch a list of the top 10 trending topics for the given location,
     specified as a WOEID.
     """
 
-    resp, content = _make_authorized_get(TRENDS_ENDPOINT % location)
+    resp, content = _make_authorized_get(TRENDS_ENDPOINT % location_woeid)
 
     if resp.status != 200:
         raise ApiRequestException(
             '%s request failed (status %d)' % (TRENDS_ENDPOINT, resp.status),
             resp.status)
 
-    content = json.loads(content)
+    content = json.loads(content.encode('utf-8'))
     trends = content[0].get('trends', [])
     trends.reverse()
     timestamp = datetime.now()
     utime = time.mktime(timestamp.timetuple())
 
-    return [Trend(id='%s-%s-%s' % (trend['name'].encode('utf-8').lstrip('#'),
-                                   location, utime),
-                  name=trend['name'].encode('utf-8').lstrip('#'),
-                  timestamp=timestamp, location=ndb.Key(Location, location),
-                  rating=scale_trend_rating(rating + 1))
-            for rating, trend in enumerate(trends)]
+    results = []
+
+    for rating, trend in enumerate(trends):
+        trend_name = trend['name'].lstrip('#')
+        trend_id = '%s-%s-%s' % (trend_name, location_name, utime)
+        results.append(Trend(id=trend_id, name=trend_name, timestamp=timestamp,
+                             location=ndb.Key(Location, location_name),
+                             rating=scale_trend_rating(rating + 1)))
+
+    return results
 
 
 def get_locations_with_trends(exclude=None):
@@ -70,7 +74,7 @@ def get_locations_with_trends(exclude=None):
                                                resp.status),
             resp.status)
 
-    locations = json.loads(content)
+    locations = json.loads(content.encode('utf-8'))
 
     return [l for l in locations if l['placeType']['code'] not in exclude]
 

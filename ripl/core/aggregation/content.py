@@ -40,8 +40,8 @@ def aggregate_content(trend, location, timestamp):
 
     Args:
         trend: the trend to collect content for.
-        location: the geographic location the trend pertains to.
-        timestamp: the timestamp of the trend.
+        location: the name of the location the trend pertains to.
+        timestamp: the unix timestamp of the trend.
     """
 
     logging.debug('Aggregating content for %s' % trend)

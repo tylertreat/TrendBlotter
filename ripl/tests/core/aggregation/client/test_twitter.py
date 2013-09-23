@@ -20,14 +20,15 @@ class TestGetTrendsByLocation(unittest.TestCase):
         """
 
         mock_get.return_value = (Mock(status=500), None)
-        location = 1234
+        location_woeid = 1234
+        location_name = 'Canada'
 
         with self.assertRaises(ApiRequestException) as ctx:
-            twitter.get_trends_by_location(location)
+            twitter.get_trends_by_location(location_name, location_woeid)
 
         from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
 
-        mock_get.assert_called_once_with(TRENDS_ENDPOINT % location)
+        mock_get.assert_called_once_with(TRENDS_ENDPOINT % location_woeid)
         self.assertIsInstance(ctx.exception, ApiRequestException)
 
     @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
@@ -67,18 +68,19 @@ class TestGetTrendsByLocation(unittest.TestCase):
 
         mock_get.return_value = (Mock(status=200), content)
 
-        location = 2972
+        location_woeid = 2972
+        location_name = 'Worldwide'
 
-        actual = twitter.get_trends_by_location(location)
+        actual = twitter.get_trends_by_location(location_name, location_woeid)
 
         from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
 
-        mock_get.assert_called_once_with(TRENDS_ENDPOINT % location)
+        mock_get.assert_called_once_with(TRENDS_ENDPOINT % location_woeid)
         self.assertEqual('BenjLexieMarjLoveTriangle', actual[0].name)
-        self.assertEqual(2972, actual[0].location.id())
+        self.assertEqual('Worldwide', actual[0].location.id())
         self.assertEqual(1, actual[0].rating)
         self.assertEqual('ReasonsToLive', actual[1].name)
-        self.assertEqual(2972, actual[1].location.id())
+        self.assertEqual('Worldwide', actual[1].location.id())
         self.assertEqual(12.0, actual[1].rating)
 
 

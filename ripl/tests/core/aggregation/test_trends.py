@@ -183,7 +183,7 @@ class TestAggregateForLocations(unittest.TestCase):
         aggregate_for_locations(self.locations)
 
         to_entities.assert_called_once_with(self.locations)
-        expected = [call(loc.woeid) for loc in mock_locations]
+        expected = [call(loc.name, loc.woeid) for loc in mock_locations]
         self.assertEqual(expected, get_trends.call_args_list)
         expected = [call(mock_locations), call(mock_trends), call(mock_trends),
                     call(mock_trends), call(mock_trends), call(mock_trends)]
@@ -199,7 +199,7 @@ class TestAggregateForLocations(unittest.TestCase):
                           for loc in self.locations]
         to_entities.return_value = mock_locations
 
-        def mock_get_trends(woeid):
+        def mock_get_trends(name, woeid):
             raise ApiRequestException('oh snap', 429)
 
         get_trends.side_effect = mock_get_trends
@@ -208,7 +208,8 @@ class TestAggregateForLocations(unittest.TestCase):
             aggregate_for_locations(self.locations)
 
         to_entities.assert_called_once_with(self.locations)
-        get_trends.assert_called_once_with(mock_locations[0].woeid)
+        get_trends.assert_called_once_with(mock_locations[0].name,
+                                           mock_locations[0].woeid)
         put_multi.assert_called_once_with(mock_locations)
         self.assertIsInstance(ctx.exception, Abort)
 
