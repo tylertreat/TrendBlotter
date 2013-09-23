@@ -3,3 +3,10 @@ indexes:
   properties:
   - name: location
   - name: timestamp
+
+- kind: Trend
+  properties:
+  - name: has_content
+  - name: location
+  - name: rating
+    direction: desc
