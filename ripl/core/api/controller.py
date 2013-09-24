@@ -36,18 +36,20 @@ def aggregate_trends():
 
 
 def _get_trends():
-    trends = {}
+    trends_dict = {}
     locations = ['Worldwide', 'United States', 'Canada', 'United Kingdom',
                  'Brazil', 'Australia', 'Russia']
 
     for location in locations:
-        trend = get_trends_for_location(location, 1)
-        if not trend:
-            trends[location.replace(' ', '_')] = {'url': 'n/a', 'name': 'n/a',
-                                                  'image_url': 'n/a',
-                                                  'source': 'n/a'}
+        trends = get_trends_for_location(location, 1)
+        if not trends:
+            trends_dict[location.replace(' ', '_')] = {'url': 'n/a',
+                                                       'name': 'n/a',
+                                                       'image_url': 'n/a',
+                                                       'source': 'n/a'}
             continue
 
+        trend = trends[0]
         content = trend.best_content()
         if not content:
             content = {'link': 'n/a', 'image': 'n/a', 'source': 'n/a'}
@@ -56,8 +58,7 @@ def _get_trends():
                  'image_url': content['image'],
                  'source': content['source']}
 
-        trends[location.replace(' ', '_')] = trend
+        trends_dict[location.replace(' ', '_')] = trend
 
-    print trends
-    return trends
+    return trends_dict
 
