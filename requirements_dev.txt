@@ -8,3 +8,4 @@ coverage
 nose-exclude
 NoseGunit
 webapp2
+pil
