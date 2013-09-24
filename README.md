@@ -1,4 +1,4 @@
-ripl
+TrendBlotter
 =========
 This is what's making waves.
 
@@ -7,7 +7,7 @@ Getting Started
 Clone the repo.
 
 ```
-git clone https://github.com/tylertreat/ripl.git
+git clone https://github.com/tylertreat/TrendBlotter.git
 ````
 
 Ensure that pip is installed.
@@ -27,14 +27,14 @@ virtualenvwrapper.
   - Create your virtualenv and point it to your current directory
 
     ```
-    mkvirtualenv ripl -a $PWD
+    mkvirtualenv trendblotter -a $PWD
     ```
 
   - From then on when you activate your virtualenv it will take you to your
       directory.
 
     ```
-    workon ripl
+    workon trendblotter
     ```
 
 
@@ -59,7 +59,7 @@ appengine's runtime environment.
 
   If you have created the symlinks for the App Engine SDK:
 ```
-workon ripl
+workon trendblotter
 dirname $(readlink `which dev_appserver.py`) >> $VIRTUAL_ENV/lib/python2.7/site-packages/gae.pth
 echo 'import dev_appserver; dev_appserver.fix_sys_path()' >> $VIRTUAL_ENV/lib/python2.7/site-packages/gae.pth
 ```
