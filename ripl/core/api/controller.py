@@ -4,10 +4,10 @@ from flask import render_template
 
 from furious.async import Async
 
-from ripl.core.api.blueprint import blueprint
 from ripl.core.aggregation import AGGREGATION_QUEUE
 from ripl.core.aggregation.trends import aggregate
-from ripl.core.aggregation.trends import get_trend_for_location
+from ripl.core.api.blueprint import blueprint
+from ripl.core.api.trends import get_trends_for_location
 
 
 # Error handlers
@@ -41,7 +41,7 @@ def _get_trends():
                  'Brazil', 'Australia', 'Russia']
 
     for location in locations:
-        trend = get_trend_for_location(location)
+        trend = get_trends_for_location(location, 1)
         if not trend:
             trends[location.replace(' ', '_')] = {'url': 'n/a', 'name': 'n/a',
                                                   'image_url': 'n/a',

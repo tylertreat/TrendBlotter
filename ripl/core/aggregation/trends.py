@@ -19,7 +19,6 @@ from ripl.core.aggregation import AGGREGATION_QUEUE
 from ripl.core.aggregation import ApiRequestException
 from ripl.core.aggregation import CONTENT_QUEUE
 from ripl.core.aggregation import Location
-from ripl.core.aggregation import Trend
 from ripl.core.aggregation.client import twitter
 from ripl.core.aggregation.content import aggregate_content
 
@@ -81,20 +80,6 @@ def aggregate_for_locations(locations):
             if e.status == 429:
                 logging.warn('Request limit window hit, aborting')
                 raise Abort()
-
-
-def get_trend_for_location(location):
-    """Fetch the best trend for the given location."""
-
-    trends = Trend.query(ndb.AND(
-        Trend.has_content == True,
-        Trend.location == ndb.Key('Location', location)
-    )).order(-Trend.rating).fetch()
-
-    if not trends:
-        return None
-
-    return trends[0]
 
 
 def _aggregate_trend_content(trends, location):
