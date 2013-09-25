@@ -41,7 +41,7 @@ virtualenvwrapper.
 To install all dependencies and correctly wire up lib for GAE deployment:
 
 ```
-make deps
+sudo make deps
 ```
 
 - This will pip install all the libraries referenced in requirements.txt and
