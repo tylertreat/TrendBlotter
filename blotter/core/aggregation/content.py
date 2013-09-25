@@ -72,14 +72,23 @@ def aggregate_content(trend, location, timestamp):
         entry['image'] = image_url
 
     # Update the Trend with content
+    _add_content_to_trend('%s-%s-%s' % (trend, location, timestamp), content)
+
+
+def _add_content_to_trend(trend_id, content):
+    """Add content to the trend with the given ID.
+
+    Args:
+        trend_id: the ID of the Trend to update.
+        content: a list of content dicts.
+    """
+
     if content:
-        logging.debug('Adding %d articles to %s' % (len(content), trend))
-        trend_entity = Trend.get_by_id(
-            '%s-%s-%s' % (trend, location, timestamp))
-        trend_entity.content = content
-        trend_entity.rating = scale_trend_rating(
-            trend_entity.rating + len(content))
-        trend_entity.put()
+        trend = Trend.get_by_id(trend_id)
+        logging.debug('Adding %d articles to %s' % (len(content), trend.name))
+        trend.content = content
+        trend.rating = scale_trend_rating(trend.rating + len(content))
+        trend.put()
 
 
 def _calculate_score(trend, entry):
