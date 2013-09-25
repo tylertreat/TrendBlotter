@@ -18,7 +18,7 @@ run: deps
 
 test: clean integrations
 
-deps: py_deploy_deps py_dev_deps js
+deps: py_dev_deps py_deploy_deps js
 
 py_deploy_deps: $(BUILD_DIR)/pip-deploy.log
 
