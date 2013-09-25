@@ -1,4 +1,4 @@
-application: ripl-dev
+application: trendblotter-dev
 version: 1
 runtime: python27
 api_version: 1
@@ -36,15 +36,15 @@ libraries:
 
 handlers:
 - url: /favicon.ico
-  static_files: ripl/static/img/favicon.ico
-  upload: ripl/static/img/favicon.ico
+  static_files: trendblotter/static/img/favicon.ico
+  upload: trendblotter/static/img/favicon.ico
 
 - url: /robots.txt
-  static_files: ripl/static/robots.txt
-  upload: ripl/static/robots.txt
+  static_files: trendblotter/static/robots.txt
+  upload: trendblotter/static/robots.txt
 
 - url: /static
-  static_dir: ripl/static
+  static_dir: trendblotter/static
 
 - url: /_ah/queue/async.*
   script: furious_router.app

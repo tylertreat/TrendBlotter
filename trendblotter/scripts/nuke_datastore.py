@@ -1,6 +1,6 @@
 from google.appengine.ext import ndb
 
-from ripl.core.aggregation import Trend
+from trendblotter.core.aggregation import Trend
 
 
 def nuke_trends(count=1000):

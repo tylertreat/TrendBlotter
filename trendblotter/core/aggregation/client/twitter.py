@@ -11,12 +11,12 @@ import urllib
 from google.appengine.api import memcache
 from google.appengine.ext import ndb
 
-from ripl import settings
-from ripl.core.aggregation import ApiRequestException
-from ripl.core.aggregation import ApiToken
-from ripl.core.aggregation import Location
-from ripl.core.aggregation import scale_trend_rating
-from ripl.core.aggregation import Trend
+from trendblotter import settings
+from trendblotter.core.aggregation import ApiRequestException
+from trendblotter.core.aggregation import ApiToken
+from trendblotter.core.aggregation import Location
+from trendblotter.core.aggregation import scale_trend_rating
+from trendblotter.core.aggregation import Trend
 
 
 API = 'https://api.twitter.com'

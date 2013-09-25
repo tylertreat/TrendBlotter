@@ -4,10 +4,10 @@ from flask import render_template
 
 from furious.async import Async
 
-from ripl.core.aggregation import AGGREGATION_QUEUE
-from ripl.core.aggregation.trends import aggregate
-from ripl.core.api.blueprint import blueprint
-from ripl.core.api.trends import get_trends_for_location
+from trendblotter.core.aggregation import AGGREGATION_QUEUE
+from trendblotter.core.aggregation.trends import aggregate
+from trendblotter.core.api.blueprint import blueprint
+from trendblotter.core.api.trends import get_trends_for_location
 
 
 # Error handlers

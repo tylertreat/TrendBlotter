@@ -2,13 +2,13 @@
 
 import flask
 
-from ripl.core.api.blueprint import blueprint
+from trendblotter.core.api.blueprint import blueprint
 
 # Imported to register urls
-from ripl.core.api import controller
+from trendblotter.core.api import controller
 
 
-def create_app(config="ripl.settings"):
+def create_app(config="trendblotter.settings"):
     app = flask.Flask(__name__)
 
     app.config.from_object(config)

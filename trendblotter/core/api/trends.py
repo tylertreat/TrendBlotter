@@ -1,7 +1,7 @@
 from google.appengine.ext import ndb
 
-from ripl.core.aggregation import Location
-from ripl.core.aggregation import Trend
+from trendblotter.core.aggregation import Location
+from trendblotter.core.aggregation import Trend
 
 
 def get_trends_for_location(location, count):

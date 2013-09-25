@@ -5,12 +5,12 @@ from mock import patch
 
 class TestAggregateTrends(unittest.TestCase):
 
-    @patch('ripl.core.api.controller.Async')
+    @patch('trendblotter.core.api.controller.Async')
     def test_aggregate(self, mock_async):
         """Ensure aggregate_trends inserts an aggregate task."""
-        from ripl.core.aggregation import AGGREGATION_QUEUE
-        from ripl.core.aggregation.trends import aggregate
-        from ripl.core.api.controller import aggregate_trends
+        from trendblotter.core.aggregation import AGGREGATION_QUEUE
+        from trendblotter.core.aggregation.trends import aggregate
+        from trendblotter.core.api.controller import aggregate_trends
 
         mock_async.return_value = mock_async
 

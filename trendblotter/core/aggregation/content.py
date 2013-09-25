@@ -14,8 +14,8 @@ from bs4 import BeautifulSoup
 import feedparser
 from PIL import ImageFile
 
-from ripl.core.aggregation import scale_trend_rating
-from ripl.core.aggregation import Trend
+from trendblotter.core.aggregation import scale_trend_rating
+from trendblotter.core.aggregation import Trend
 
 
 SOURCES = {

@@ -6,14 +6,14 @@ import urllib
 from mock import Mock
 from mock import patch
 
-from ripl import settings
-from ripl.core.aggregation import ApiRequestException
-from ripl.core.aggregation.client import twitter
+from trendblotter import settings
+from trendblotter.core.aggregation import ApiRequestException
+from trendblotter.core.aggregation.client import twitter
 
 
 class TestGetTrendsByLocation(unittest.TestCase):
 
-    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    @patch('trendblotter.core.aggregation.client.twitter._make_authorized_get')
     def test_bad_response(self, mock_get):
         """Ensure that an ApiRequestException is raised when a non-200 status
         code is returned from Twitter.
@@ -26,12 +26,13 @@ class TestGetTrendsByLocation(unittest.TestCase):
         with self.assertRaises(ApiRequestException) as ctx:
             twitter.get_trends_by_location(location_name, location_woeid)
 
-        from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
+        from trendblotter.core.aggregation.client.twitter \
+            import TRENDS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_ENDPOINT % location_woeid)
         self.assertIsInstance(ctx.exception, ApiRequestException)
 
-    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    @patch('trendblotter.core.aggregation.client.twitter._make_authorized_get')
     def test_happy_path(self, mock_get):
         """Ensure that the correct value is returned on a successful request.
         """
@@ -42,14 +43,16 @@ class TestGetTrendsByLocation(unittest.TestCase):
                         "trends": [
                             {
                                 "name": "#ReasonsToLive",
-                                "url": "http://twitter.com/search?q=%23ReasonsToLive",
+                                "url": "http://twitter.com\
+                                        /search?q=%23ReasonsToLive",
                                 "promoted_content": null,
                                 "query": "%23ReasonsToLive",
                                 "events": null
                             },
                             {
                                 "name": "#BenjLexieMarjLoveTriangle",
-                                "url": "http://twitter.com/search?q=%23BenjLexieMarjLoveTriangle",
+                                "url": "http://twitter.com/search\
+                                        ?q=%23BenjLexieMarjLoveTriangle",
                                 "promoted_content": null,
                                 "query": "%23BenjLexieMarjLoveTriangle",
                                 "events": null
@@ -73,7 +76,8 @@ class TestGetTrendsByLocation(unittest.TestCase):
 
         actual = twitter.get_trends_by_location(location_name, location_woeid)
 
-        from ripl.core.aggregation.client.twitter import TRENDS_ENDPOINT
+        from trendblotter.core.aggregation.client.twitter \
+            import TRENDS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_ENDPOINT % location_woeid)
         self.assertEqual('BenjLexieMarjLoveTriangle', actual[0].name)
@@ -86,7 +90,7 @@ class TestGetTrendsByLocation(unittest.TestCase):
 
 class TestGetLocationsWithTrends(unittest.TestCase):
 
-    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    @patch('trendblotter.core.aggregation.client.twitter._make_authorized_get')
     def test_bad_response(self, mock_get):
         """Ensure that an ApiRequestException is raised when a non-200 status
         code is returned from Twitter.
@@ -97,13 +101,13 @@ class TestGetLocationsWithTrends(unittest.TestCase):
         with self.assertRaises(ApiRequestException) as ctx:
             twitter.get_locations_with_trends()
 
-        from ripl.core.aggregation.client.twitter \
+        from trendblotter.core.aggregation.client.twitter \
             import TRENDS_LOCATIONS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
         self.assertIsInstance(ctx.exception, ApiRequestException)
 
-    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    @patch('trendblotter.core.aggregation.client.twitter._make_authorized_get')
     def test_happy_path(self, mock_get):
         """Ensure that the correct value is returned on a successful request.
         """
@@ -139,13 +143,13 @@ class TestGetLocationsWithTrends(unittest.TestCase):
 
         actual = twitter.get_locations_with_trends()
 
-        from ripl.core.aggregation.client.twitter \
+        from trendblotter.core.aggregation.client.twitter \
             import TRENDS_LOCATIONS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
         self.assertEqual(json.loads(content), actual)
 
-    @patch('ripl.core.aggregation.client.twitter._make_authorized_get')
+    @patch('trendblotter.core.aggregation.client.twitter._make_authorized_get')
     def test_happy_path_with_excludes(self, mock_get):
         """Ensure that the correct value is returned on a successful request
         with excludes.
@@ -182,7 +186,7 @@ class TestGetLocationsWithTrends(unittest.TestCase):
 
         actual = twitter.get_locations_with_trends(exclude=[7])
 
-        from ripl.core.aggregation.client.twitter \
+        from trendblotter.core.aggregation.client.twitter \
             import TRENDS_LOCATIONS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
@@ -191,7 +195,7 @@ class TestGetLocationsWithTrends(unittest.TestCase):
 
 class TestMakeAuthorizedGet(unittest.TestCase):
 
-    @patch('ripl.core.aggregation.client.twitter._get_bearer_token')
+    @patch('trendblotter.core.aggregation.client.twitter._get_bearer_token')
     def test_no_token(self, mock_get_token):
         """Ensure that an ApiRequestException is raised when a bearer token is
         not retrieved.
@@ -206,8 +210,8 @@ class TestMakeAuthorizedGet(unittest.TestCase):
         mock_get_token.assert_called_once_with(
             settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET)
 
-    @patch('ripl.core.aggregation.client.twitter.Http.request')
-    @patch('ripl.core.aggregation.client.twitter._get_bearer_token')
+    @patch('trendblotter.core.aggregation.client.twitter.Http.request')
+    @patch('trendblotter.core.aggregation.client.twitter._get_bearer_token')
     def test_happy_path(self, mock_get_token, mock_request):
         """Ensure that the correct values are returned when a request is
         successfully made.
@@ -224,7 +228,7 @@ class TestMakeAuthorizedGet(unittest.TestCase):
 
         headers = {'Authorization': 'Bearer %s' % token}
 
-        from ripl.core.aggregation.client.twitter import API
+        from trendblotter.core.aggregation.client.twitter import API
 
         mock_get_token.assert_called_once_with(
             settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET)
@@ -236,7 +240,7 @@ class TestMakeAuthorizedGet(unittest.TestCase):
 
 class TestGetBearerToken(unittest.TestCase):
 
-    @patch('ripl.core.aggregation.client.twitter.memcache')
+    @patch('trendblotter.core.aggregation.client.twitter.memcache')
     def test_from_memcache(self, mock_memcache):
         """Ensure that the bearer token is returned from memcache when present
         and force_refresh is False.
@@ -248,13 +252,14 @@ class TestGetBearerToken(unittest.TestCase):
         actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
                                            settings.TWITTER_CONSUMER_SECRET)
 
-        from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
+        from trendblotter.core.aggregation.client.twitter \
+            import TWITTER_API_TOKEN
 
         mock_memcache.get.assert_called_once_with(TWITTER_API_TOKEN)
         self.assertEqual(expected, actual)
 
-    @patch('ripl.core.aggregation.client.twitter.ApiToken')
-    @patch('ripl.core.aggregation.client.twitter.memcache')
+    @patch('trendblotter.core.aggregation.client.twitter.ApiToken')
+    @patch('trendblotter.core.aggregation.client.twitter.memcache')
     def test_from_datastore(self, mock_memcache, mock_api_token):
         """Ensure that the bearer token is returned from the datastore when
         present and force_refresh is False.
@@ -267,16 +272,17 @@ class TestGetBearerToken(unittest.TestCase):
         actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
                                            settings.TWITTER_CONSUMER_SECRET)
 
-        from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
+        from trendblotter.core.aggregation.client.twitter \
+            import TWITTER_API_TOKEN
 
         mock_memcache.get.assert_called_once_with(TWITTER_API_TOKEN)
         mock_api_token.get_by_id.assert_called_once_with(TWITTER_API_TOKEN)
         mock_memcache.set.assert_called_once_with(TWITTER_API_TOKEN, expected)
         self.assertEqual(expected, actual)
 
-    @patch('ripl.core.aggregation.client.twitter.Http.request')
-    @patch('ripl.core.aggregation.client.twitter.ApiToken')
-    @patch('ripl.core.aggregation.client.twitter.memcache')
+    @patch('trendblotter.core.aggregation.client.twitter.Http.request')
+    @patch('trendblotter.core.aggregation.client.twitter.ApiToken')
+    @patch('trendblotter.core.aggregation.client.twitter.memcache')
     def test_exchange_ok(self, mock_memcache, mock_api_token, mock_request):
         """Ensure that the bearer token is fetched from Twitter when not
         already present in memcache or datastore.
@@ -291,9 +297,11 @@ class TestGetBearerToken(unittest.TestCase):
         actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
                                            settings.TWITTER_CONSUMER_SECRET)
 
-        from ripl.core.aggregation.client.twitter import API
-        from ripl.core.aggregation.client.twitter import BEARER_TOKEN_ENDPOINT
-        from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
+        from trendblotter.core.aggregation.client.twitter import API
+        from trendblotter.core.aggregation.client.twitter \
+            import BEARER_TOKEN_ENDPOINT
+        from trendblotter.core.aggregation.client.twitter \
+            import TWITTER_API_TOKEN
 
         content_type = 'application/x-www-form-urlencoded;charset=UTF-8'
         key = urllib.quote(settings.TWITTER_CONSUMER_KEY)
@@ -312,9 +320,9 @@ class TestGetBearerToken(unittest.TestCase):
         mock_api_token.put.assert_called_once()
         self.assertEqual(expected, actual)
 
-    @patch('ripl.core.aggregation.client.twitter.Http.request')
-    @patch('ripl.core.aggregation.client.twitter.ApiToken')
-    @patch('ripl.core.aggregation.client.twitter.memcache')
+    @patch('trendblotter.core.aggregation.client.twitter.Http.request')
+    @patch('trendblotter.core.aggregation.client.twitter.ApiToken')
+    @patch('trendblotter.core.aggregation.client.twitter.memcache')
     def test_exchange_non_200(self, mock_memcache, mock_api_token,
                               mock_request):
         """Ensure that None is returned when a non-200 response status is
@@ -328,9 +336,11 @@ class TestGetBearerToken(unittest.TestCase):
         actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
                                            settings.TWITTER_CONSUMER_SECRET)
 
-        from ripl.core.aggregation.client.twitter import API
-        from ripl.core.aggregation.client.twitter import BEARER_TOKEN_ENDPOINT
-        from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
+        from trendblotter.core.aggregation.client.twitter import API
+        from trendblotter.core.aggregation.client.twitter \
+            import BEARER_TOKEN_ENDPOINT
+        from trendblotter.core.aggregation.client.twitter \
+            import TWITTER_API_TOKEN
 
         content_type = 'application/x-www-form-urlencoded;charset=UTF-8'
         key = urllib.quote(settings.TWITTER_CONSUMER_KEY)
@@ -349,9 +359,9 @@ class TestGetBearerToken(unittest.TestCase):
         self.assertFalse(mock_api_token.put.called)
         self.assertEqual(None, actual)
 
-    @patch('ripl.core.aggregation.client.twitter.Http.request')
-    @patch('ripl.core.aggregation.client.twitter.ApiToken')
-    @patch('ripl.core.aggregation.client.twitter.memcache')
+    @patch('trendblotter.core.aggregation.client.twitter.Http.request')
+    @patch('trendblotter.core.aggregation.client.twitter.ApiToken')
+    @patch('trendblotter.core.aggregation.client.twitter.memcache')
     def test_exchange_bad_response(self, mock_memcache, mock_api_token,
                                    mock_request):
         """Ensure that None is returned when an invalid response is given by
@@ -366,9 +376,11 @@ class TestGetBearerToken(unittest.TestCase):
         actual = twitter._get_bearer_token(settings.TWITTER_CONSUMER_KEY,
                                            settings.TWITTER_CONSUMER_SECRET)
 
-        from ripl.core.aggregation.client.twitter import API
-        from ripl.core.aggregation.client.twitter import BEARER_TOKEN_ENDPOINT
-        from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
+        from trendblotter.core.aggregation.client.twitter import API
+        from trendblotter.core.aggregation.client.twitter \
+            import BEARER_TOKEN_ENDPOINT
+        from trendblotter.core.aggregation.client.twitter \
+            import TWITTER_API_TOKEN
 
         content_type = 'application/x-www-form-urlencoded;charset=UTF-8'
         key = urllib.quote(settings.TWITTER_CONSUMER_KEY)
@@ -387,9 +399,9 @@ class TestGetBearerToken(unittest.TestCase):
         self.assertFalse(mock_api_token.put.called)
         self.assertEqual(None, actual)
 
-    @patch('ripl.core.aggregation.client.twitter.Http.request')
-    @patch('ripl.core.aggregation.client.twitter.ApiToken')
-    @patch('ripl.core.aggregation.client.twitter.memcache')
+    @patch('trendblotter.core.aggregation.client.twitter.Http.request')
+    @patch('trendblotter.core.aggregation.client.twitter.ApiToken')
+    @patch('trendblotter.core.aggregation.client.twitter.memcache')
     def test_force_refresh(self, mock_memcache, mock_api_token, mock_request):
         """Ensure that we bypass caching when force_refresh is True."""
 
@@ -401,9 +413,11 @@ class TestGetBearerToken(unittest.TestCase):
                                            settings.TWITTER_CONSUMER_SECRET,
                                            force_refresh=True)
 
-        from ripl.core.aggregation.client.twitter import API
-        from ripl.core.aggregation.client.twitter import BEARER_TOKEN_ENDPOINT
-        from ripl.core.aggregation.client.twitter import TWITTER_API_TOKEN
+        from trendblotter.core.aggregation.client.twitter import API
+        from trendblotter.core.aggregation.client.twitter \
+            import BEARER_TOKEN_ENDPOINT
+        from trendblotter.core.aggregation.client.twitter \
+            import TWITTER_API_TOKEN
 
         content_type = 'application/x-www-form-urlencoded;charset=UTF-8'
         key = urllib.quote(settings.TWITTER_CONSUMER_KEY)

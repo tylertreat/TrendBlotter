@@ -4,7 +4,7 @@ PIP := pip
 
 BUILD_DIR := .build
 TOOLS_DIR := .tools
-JAVASCRIPT_DIR := ./ripl/static/js
+JAVASCRIPT_DIR := ./trendblotter/static/js
 
 clean:
 		find . -name "*.py[co]" -delete
@@ -37,7 +37,7 @@ unit:
 		nosetests
 
 integrations:
-		nosetests --logging-level=ERROR -a slow --with-coverage --cover-package=ripl
+		nosetests --logging-level=ERROR -a slow --with-coverage --cover-package=trendblotter
 
 test: clean integrations
 
