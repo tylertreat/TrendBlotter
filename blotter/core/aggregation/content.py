@@ -14,8 +14,8 @@ from bs4 import BeautifulSoup
 import feedparser
 from PIL import ImageFile
 
-from trendblotter.core.aggregation import scale_trend_rating
-from trendblotter.core.aggregation import Trend
+from blotter.core.aggregation import scale_trend_rating
+from blotter.core.aggregation import Trend
 
 
 SOURCES = {

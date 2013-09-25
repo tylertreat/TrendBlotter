@@ -15,12 +15,12 @@ from google.appengine.ext import ndb
 from furious import context
 from furious.errors import Abort
 
-from trendblotter.core.aggregation import AGGREGATION_QUEUE
-from trendblotter.core.aggregation import ApiRequestException
-from trendblotter.core.aggregation import CONTENT_QUEUE
-from trendblotter.core.aggregation import Location
-from trendblotter.core.aggregation.client import twitter
-from trendblotter.core.aggregation.content import aggregate_content
+from blotter.core.aggregation import AGGREGATION_QUEUE
+from blotter.core.aggregation import ApiRequestException
+from blotter.core.aggregation import CONTENT_QUEUE
+from blotter.core.aggregation import Location
+from blotter.core.aggregation.client import twitter
+from blotter.core.aggregation.content import aggregate_content
 
 
 BATCH_SIZE = 15

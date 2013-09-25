@@ -7,18 +7,17 @@ from mock import patch
 
 from furious.errors import Abort
 
-from trendblotter.core.aggregation import ApiRequestException
-from trendblotter.core.aggregation import Location
+from blotter.core.aggregation import ApiRequestException
+from blotter.core.aggregation import Location
 
 
 class TestAggregate(unittest.TestCase):
 
-    @patch(('trendblotter.core.aggregation.trends.twitter.'
-            'get_locations_with_trends'))
-    @patch('trendblotter.core.aggregation.trends.context')
+    @patch('blotter.core.aggregation.trends.twitter.get_locations_with_trends')
+    @patch('blotter.core.aggregation.trends.context')
     def test_happy_path(self, mock_context, mock_get_locations):
         """Ensure we insert fan out tasks for locations in batches."""
-        from trendblotter.core.aggregation.trends import aggregate
+        from blotter.core.aggregation.trends import aggregate
 
         content = """[
                         {
@@ -94,16 +93,16 @@ class TestAggregate(unittest.TestCase):
 
         aggregate()
 
-        from trendblotter.core.aggregation.trends import EXCLUDE_TYPES
+        from blotter.core.aggregation.trends import EXCLUDE_TYPES
 
         mock_get_locations.assert_called_once_with(exclude=EXCLUDE_TYPES)
         mock_context.new.assert_called_once_with()
         self.assertEqual(2, context.add.call_count)
 
 
-@patch('trendblotter.core.aggregation.trends.ndb.put_multi')
-@patch('trendblotter.core.aggregation.trends.twitter.get_trends_by_location')
-@patch('trendblotter.core.aggregation.trends._location_dicts_to_entities')
+@patch('blotter.core.aggregation.trends.ndb.put_multi')
+@patch('blotter.core.aggregation.trends.twitter.get_trends_by_location')
+@patch('blotter.core.aggregation.trends._location_dicts_to_entities')
 class TestAggregateForLocations(unittest.TestCase):
 
     def setUp(self):
@@ -176,12 +175,11 @@ class TestAggregateForLocations(unittest.TestCase):
 
         self.locations = json.loads(locations)
 
-    @patch('trendblotter.core.aggregation.trends._aggregate_trend_content')
+    @patch('blotter.core.aggregation.trends._aggregate_trend_content')
     def test_happy_path(self, aggregate_content, to_entities, get_trends,
                         put_multi):
         """Ensure we persist Location and Trend entities."""
-        from trendblotter.core.aggregation.trends \
-            import aggregate_for_locations
+        from blotter.core.aggregation.trends import aggregate_for_locations
 
         mock_locations = [Mock(woeid=loc['woeid'], name=loc['name'])
                           for loc in self.locations]
@@ -202,8 +200,7 @@ class TestAggregateForLocations(unittest.TestCase):
 
     def test_abort_on_429(self, to_entities, get_trends, put_multi):
         """Ensure we bail if we get an HTTP 429 status code."""
-        from trendblotter.core.aggregation.trends \
-            import aggregate_for_locations
+        from blotter.core.aggregation.trends import aggregate_for_locations
 
         mock_locations = [Mock(woeid=loc['woeid'], name=loc['name'])
                           for loc in self.locations]
@@ -228,13 +225,13 @@ class TestChunk(unittest.TestCase):
 
     def test_empty_list(self):
         """Ensure an empty list is returned when an empty list is passed."""
-        from trendblotter.core.aggregation.trends import chunk
+        from blotter.core.aggregation.trends import chunk
 
         self.assertEqual([], chunk([], 10).next())
 
     def test_bad_chunk_size(self):
         """Ensure an empty list is returned when a bad chunk size is passed."""
-        from trendblotter.core.aggregation.trends import chunk
+        from blotter.core.aggregation.trends import chunk
 
         self.assertEqual([], chunk([1, 2, 3, 4, 5], 0).next())
 
@@ -242,7 +239,7 @@ class TestChunk(unittest.TestCase):
         """Ensure the list is chunked properly into equal groups when it can be
         evenly divided.
         """
-        from trendblotter.core.aggregation.trends import chunk
+        from blotter.core.aggregation.trends import chunk
 
         the_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         chunk_size = 3
@@ -258,7 +255,7 @@ class TestChunk(unittest.TestCase):
         """Ensure the list is chunked properly into equal groups except for the
         last when it cannot be evenly divided.
         """
-        from trendblotter.core.aggregation.trends import chunk
+        from blotter.core.aggregation.trends import chunk
 
         the_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         chunk_size = 3
@@ -280,8 +277,7 @@ class TestLocationDictsToEntities(unittest.TestCase):
         """Ensure that the list of location dicts is converted to a list of
         location entities.
         """
-        from trendblotter.core.aggregation.trends \
-            import _location_dicts_to_entities
+        from blotter.core.aggregation.trends import _location_dicts_to_entities
 
         locations = """[
                         {

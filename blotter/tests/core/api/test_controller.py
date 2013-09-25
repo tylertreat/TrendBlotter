@@ -5,12 +5,12 @@ from mock import patch
 
 class TestAggregateTrends(unittest.TestCase):
 
-    @patch('trendblotter.core.api.controller.Async')
+    @patch('blotter.core.api.controller.Async')
     def test_aggregate(self, mock_async):
         """Ensure aggregate_trends inserts an aggregate task."""
-        from trendblotter.core.aggregation import AGGREGATION_QUEUE
-        from trendblotter.core.aggregation.trends import aggregate
-        from trendblotter.core.api.controller import aggregate_trends
+        from blotter.core.aggregation import AGGREGATION_QUEUE
+        from blotter.core.aggregation.trends import aggregate
+        from blotter.core.api.controller import aggregate_trends
 
         mock_async.return_value = mock_async
 

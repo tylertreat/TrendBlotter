@@ -2,13 +2,13 @@
 
 import flask
 
-from trendblotter.core.api.blueprint import blueprint
+from blotter.core.api.blueprint import blueprint
 
 # Imported to register urls
-from trendblotter.core.api import controller
+from blotter.core.api import controller
 
 
-def create_app(config="trendblotter.settings"):
+def create_app(config="blotter.settings"):
     app = flask.Flask(__name__)
 
     app.config.from_object(config)
