@@ -19,6 +19,10 @@ from blotter.core.aggregation import Trend
 
 
 SOURCES = {
+    'QUERY': {
+        'Google News':
+        'https://news.google.com/news/feeds?q=%s&geo=%s&output=rss'
+    },
     'CNN': {
         'Top Stories': 'http://rss.cnn.com/rss/cnn_topstories.rss',
         'World': 'http://rss.cnn.com/rss/cnn_world.rss',
@@ -31,6 +35,16 @@ SOURCES = {
         'Entertainment': 'http://rss.cnn.com/rss/cnn_showbiz.rss',
         'Travel': 'http://rss.cnn.com/rss/cnn_travel.rss',
         'Living': 'http://rss.cnn.com/rss/cnn_living.rss'
+    },
+    'BBC': {
+        'Top Stories': 'http://feeds.bbci.co.uk/news/rss.xml',
+        'World': 'http://feeds.bbci.co.uk/news/world/rss.xml',
+        'U.K.': 'http://feeds.bbci.co.uk/news/uk/rss.xml',
+        'Business': 'http://feeds.bbci.co.uk/news/business/rss.xml',
+        'Politics': 'http://feeds.bbci.co.uk/news/politics/rss.xml',
+        'Health': 'http://feeds.bbci.co.uk/news/health/rss.xml',
+        'Technology': 'http://feeds.bbci.co.uk/news/technology/rss.xml',
+        'Sport': 'http://feeds.bbci.co.uk/sport/0/rss.xml?edition=uk'
     }
 }
 
@@ -51,6 +65,10 @@ def aggregate_content(trend, location, timestamp):
     # Parse every feed and look for relevant content
     for source, feeds in SOURCES.iteritems():
         for feed_name, feed_url in feeds.iteritems():
+            if source == 'QUERY':
+                feed_url = feed_url % (urllib2.quote(trend),
+                                       urllib2.quote(location))
+
             entries = memcache.get('%s-%s' % (source, feed_name))
 
             if not entries:
@@ -103,6 +121,7 @@ def _get_image_size(uri):
     Returns None is the dimensions cannot be determined.
     """
 
+    response = None
     try:
         response = urllib2.urlopen(uri)
         parser = ImageFile.Parser()
