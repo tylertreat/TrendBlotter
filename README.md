@@ -1,6 +1,6 @@
 TrendBlotter
 =========
-This is what's making waves.
+The world talks, we listen.
 
 Getting Started
 ---------------
