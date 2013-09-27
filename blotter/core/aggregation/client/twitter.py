@@ -48,7 +48,7 @@ def get_trends_by_location(location_name, location_woeid):
     results = []
 
     for rating, trend in enumerate(trends):
-        trend_name = trend['name'].lstrip('#')
+        trend_name = trend['name']
         trend_id = '%s-%s-%s' % (trend_name, location_name, utime)
         results.append(Trend(id=trend_id, name=trend_name, timestamp=timestamp,
                              location=ndb.Key(Location, location_name),

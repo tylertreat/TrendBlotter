@@ -78,10 +78,10 @@ class TestGetTrendsByLocation(unittest.TestCase):
         from blotter.core.aggregation.client.twitter import TRENDS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_ENDPOINT % location_woeid)
-        self.assertEqual('BenjLexieMarjLoveTriangle', actual[0].name)
+        self.assertEqual('#BenjLexieMarjLoveTriangle', actual[0].name)
         self.assertEqual('Worldwide', actual[0].location.id())
         self.assertEqual(1, actual[0].rating)
-        self.assertEqual('ReasonsToLive', actual[1].name)
+        self.assertEqual('#ReasonsToLive', actual[1].name)
         self.assertEqual('Worldwide', actual[1].location.id())
         self.assertEqual(12.0, actual[1].rating)
 

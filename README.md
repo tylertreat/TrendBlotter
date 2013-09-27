@@ -1,6 +1,6 @@
 TrendBlotter
 =========
-This is what's making waves.
+The world talks, we listen.
 
 Getting Started
 ---------------
@@ -27,14 +27,14 @@ virtualenvwrapper.
   - Create your virtualenv and point it to your current directory
 
     ```
-    mkvirtualenv trendblotter -a $PWD
+    mkvirtualenv blotter -a $PWD
     ```
 
   - From then on when you activate your virtualenv it will take you to your
       directory.
 
     ```
-    workon trendblotter
+    workon blotter
     ```
 
 
@@ -59,7 +59,7 @@ appengine's runtime environment.
 
   If you have created the symlinks for the App Engine SDK:
 ```
-workon trendblotter
+workon blotter
 dirname $(readlink `which dev_appserver.py`) >> $VIRTUAL_ENV/lib/python2.7/site-packages/gae.pth
 echo 'import dev_appserver; dev_appserver.fix_sys_path()' >> $VIRTUAL_ENV/lib/python2.7/site-packages/gae.pth
 ```

@@ -16,4 +16,4 @@ gaepdb.py
 lib/external
 
 settingslocal.py
-trendblotter/static/js/main-built.js
+blotter/static/js/main-built.js

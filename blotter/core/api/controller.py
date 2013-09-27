@@ -38,7 +38,7 @@ def aggregate_trends():
 def _get_trends():
     trends_dict = {}
     locations = ['Worldwide', 'United States', 'Canada', 'United Kingdom',
-                 'Brazil', 'Australia', 'Russia']
+                 'Japan', 'Australia', 'Russia']
 
     for location in locations:
         trends = get_trends_for_location(location, 1)
