@@ -8,7 +8,7 @@ indexes:
   properties:
   - name: has_content
   - name: location
-  - name: rating
-    direction: desc
   - name: timestamp
+    direction: desc
+  - name: rating
     direction: desc

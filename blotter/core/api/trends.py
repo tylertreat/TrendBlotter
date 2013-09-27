@@ -24,7 +24,7 @@ def get_trends_for_location(location, count):
     return Trend.query(ndb.AND(
         Trend.has_content == True,
         Trend.location == ndb.Key('Location', location)
-    )).order(-Trend.rating, -Trend.timestamp).fetch(count)
+    )).order(-Trend.timestamp, -Trend.rating).fetch(count)
 
 
 def get_recent_trends(count, preferred=None, dedupe=True):
