@@ -66,8 +66,8 @@ def aggregate_content(trend, location, timestamp):
     for source, feeds in SOURCES.iteritems():
         for feed_name, feed_url in feeds.iteritems():
             if source == 'QUERY':
-                feed_url = feed_url % (urllib2.quote(trend),
-                                       urllib2.quote(location))
+                feed_url = feed_url % (urllib2.quote(trend.encode('utf8')),
+                                       urllib2.quote(location.encode('utf8')))
 
             entries = memcache.get('%s-%s' % (source, feed_name))
 
