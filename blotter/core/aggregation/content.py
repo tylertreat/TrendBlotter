@@ -39,8 +39,6 @@ SOURCES = {
             'Technology': 'http://rss.cnn.com/rss/cnn_tech.rss',
             'Health': 'http://rss.cnn.com/rss/cnn_health.rss',
             'Entertainment': 'http://rss.cnn.com/rss/cnn_showbiz.rss',
-            'Travel': 'http://rss.cnn.com/rss/cnn_travel.rss',
-            'Living': 'http://rss.cnn.com/rss/cnn_living.rss'
         },
         'options': {
             'use_og': True
