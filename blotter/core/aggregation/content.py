@@ -20,31 +20,46 @@ from blotter.core.aggregation import Trend
 
 SOURCES = {
     'QUERY': {
-        'Google News':
-        'https://news.google.com/news/feeds?q=%s&geo=%s&output=rss'
+        'feeds': {
+            'Google News':
+            'https://news.google.com/news/feeds?q=%s&geo=%s&output=rss'
+        },
+        'options': {
+            'use_og': False
+        }
     },
     'CNN': {
-        'Top Stories': 'http://rss.cnn.com/rss/cnn_topstories.rss',
-        'World': 'http://rss.cnn.com/rss/cnn_world.rss',
-        'U.S.': 'http://rss.cnn.com/rss/cnn_us.rss',
-        'Business': 'http://rss.cnn.com/rss/money_latest.rss',
-        'Politics': 'http://rss.cnn.com/rss/cnn_allpolitics.rss',
-        'Crime': 'http://rss.cnn.com/rss/cnn_crime.rss',
-        'Technology': 'http://rss.cnn.com/rss/cnn_tech.rss',
-        'Health': 'http://rss.cnn.com/rss/cnn_health.rss',
-        'Entertainment': 'http://rss.cnn.com/rss/cnn_showbiz.rss',
-        'Travel': 'http://rss.cnn.com/rss/cnn_travel.rss',
-        'Living': 'http://rss.cnn.com/rss/cnn_living.rss'
+        'feeds': {
+            'Top Stories': 'http://rss.cnn.com/rss/cnn_topstories.rss',
+            'World': 'http://rss.cnn.com/rss/cnn_world.rss',
+            'U.S.': 'http://rss.cnn.com/rss/cnn_us.rss',
+            'Business': 'http://rss.cnn.com/rss/money_latest.rss',
+            'Politics': 'http://rss.cnn.com/rss/cnn_allpolitics.rss',
+            'Crime': 'http://rss.cnn.com/rss/cnn_crime.rss',
+            'Technology': 'http://rss.cnn.com/rss/cnn_tech.rss',
+            'Health': 'http://rss.cnn.com/rss/cnn_health.rss',
+            'Entertainment': 'http://rss.cnn.com/rss/cnn_showbiz.rss',
+            'Travel': 'http://rss.cnn.com/rss/cnn_travel.rss',
+            'Living': 'http://rss.cnn.com/rss/cnn_living.rss'
+        },
+        'options': {
+            'use_og': True
+        }
     },
     'BBC': {
-        'Top Stories': 'http://feeds.bbci.co.uk/news/rss.xml',
-        'World': 'http://feeds.bbci.co.uk/news/world/rss.xml',
-        'U.K.': 'http://feeds.bbci.co.uk/news/uk/rss.xml',
-        'Business': 'http://feeds.bbci.co.uk/news/business/rss.xml',
-        'Politics': 'http://feeds.bbci.co.uk/news/politics/rss.xml',
-        'Health': 'http://feeds.bbci.co.uk/news/health/rss.xml',
-        'Technology': 'http://feeds.bbci.co.uk/news/technology/rss.xml',
-        'Sport': 'http://feeds.bbci.co.uk/sport/0/rss.xml?edition=uk'
+        'feeds': {
+            'Top Stories': 'http://feeds.bbci.co.uk/news/rss.xml',
+            'World': 'http://feeds.bbci.co.uk/news/world/rss.xml',
+            'U.K.': 'http://feeds.bbci.co.uk/news/uk/rss.xml',
+            'Business': 'http://feeds.bbci.co.uk/news/business/rss.xml',
+            'Politics': 'http://feeds.bbci.co.uk/news/politics/rss.xml',
+            'Health': 'http://feeds.bbci.co.uk/news/health/rss.xml',
+            'Technology': 'http://feeds.bbci.co.uk/news/technology/rss.xml',
+            'Sport': 'http://feeds.bbci.co.uk/sport/0/rss.xml?edition=uk'
+        },
+        'options': {
+            'use_og': False
+        }
     }
 }
 
@@ -63,8 +78,8 @@ def aggregate_content(trend, location, timestamp):
     content = []
 
     # Parse every feed and look for relevant content
-    for source, feeds in SOURCES.iteritems():
-        for feed_name, feed_url in feeds.iteritems():
+    for source, data in SOURCES.iteritems():
+        for feed_name, feed_url in data['feeds'].iteritems():
             if source == 'QUERY':
                 feed_url = feed_url % (urllib2.quote(trend.encode('utf8')),
                                        urllib2.quote(location.encode('utf8')))
@@ -75,19 +90,26 @@ def aggregate_content(trend, location, timestamp):
                 entries = feedparser.parse(feed_url).get('entries', [])
                 memcache.set('%s-%s' % (source, feed_name), entries, time=3600)
 
-            source_content = [{'link': entry['link'], 'source': source,
-                               'score': _calculate_score(trend, entry)}
-                              for entry in entries if 'link' in entry]
+            for entry in entries:
+                if 'link' not in entry:
+                    continue
 
-            # Remove irrelevant entries and add the rest to the list
-            content.extend([e for e in source_content if e['score'] > 0])
+                if feed_name == 'Google News':
+                    source = entry['title'].split(' - ')[-1]
 
-    for entry in content:
-        image_url = _find_content_image_url(entry['link'])
-        if not image_url:
-            continue
+                source_content = {'link': entry['link'], 'source': source,
+                                  'score': _calculate_score(trend, entry)}
 
-        entry['image'] = image_url
+                if source_content['score'] > 0:
+                    image_url = _find_content_image_url(
+                        source_content['link'],
+                        use_og=data['options']['use_og'])
+
+                    if not image_url:
+                        continue
+
+                    source_content['image'] = image_url
+                    content.append(source_content)
 
     # Update the Trend with content
     if content:
@@ -145,9 +167,15 @@ def _get_image_size(uri):
             response.close()
 
 
-def _find_content_image_url(url):
+def _find_content_image_url(url, use_og=True):
     """Find the URL of the best image to use for the given content URL.
-    Returns None if a suitable image cannot be found.
+
+    Args:
+        url: the content URL to scrape an image from.
+        use_og: attempt to use the Open Graph protocol to find an image.
+
+    Returns:
+        an image URL or None if a suitable image was not found.
     """
 
     response = urllib2.urlopen(url)
@@ -161,10 +189,11 @@ def _find_content_image_url(url):
 
     # Allow the content author to specify the thumbnail, e.g.
     # <meta property="og:image" content="http://...">
-    og_image = (soup.find('meta', property='og:image') or
-                soup.find('meta', attrs={'name': 'og:image'}))
-    if og_image and og_image['content']:
-        return og_image['content']
+    if use_og:
+        og_image = (soup.find('meta', property='og:image') or
+                    soup.find('meta', attrs={'name': 'og:image'}))
+        if og_image and og_image['content']:
+            return og_image['content']
 
     # <link rel="image_src" href="http://...">
     thumbnail_spec = soup.find('link', rel='image_src')
