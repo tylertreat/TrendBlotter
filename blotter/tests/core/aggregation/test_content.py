@@ -7,17 +7,22 @@ from mock import patch
 from blotter.core.aggregation import content
 
 
-@patch('blotter.core.aggregation.content._get_sources')
 @patch('blotter.core.aggregation.content.memcache')
 class TestAggregateContent(unittest.TestCase):
 
     def setUp(self):
         self.old_sources = content.SOURCES
-        content.SOURCES = \
-            {'CNN': {
-                'Top Stories': 'http://rss.cnn.com/rss/cnn_topstories.rss',
-                'World': 'http://rss.cnn.com/rss/cnn_world.rss'}
-             }
+        content.SOURCES = {
+            'CNN': {
+                'feeds': {
+                    'Top Stories': 'http://rss.cnn.com/rss/cnn_topstories.rss',
+                    'World': 'http://rss.cnn.com/rss/cnn_world.rss',
+                },
+                'options': {
+                    'use_og': True
+                }
+            }
+        }
 
     def tearDown(self):
         content.SOURCES = self.old_sources
@@ -31,8 +36,9 @@ class TestAggregateContent(unittest.TestCase):
         data source, retrieves relevant, and updates the Trend entity.
         """
 
-        mock_memcache.get.return_value = [{'link': 'foo'}, {'link': 'bar'}]
-        mock_calc_score.side_effect = [10, 0]
+        mock_entries = [{'link': 'foo'}, {'link': 'bar'}]
+        mock_memcache.get.return_value = mock_entries
+        mock_calc_score.side_effect = [10, 5, 0, 0]
         mock_find_image.return_value = 'image.jpg'
 
         trend = 'trend'
@@ -42,4 +48,30 @@ class TestAggregateContent(unittest.TestCase):
         content.aggregate_content(trend, location, timestamp)
 
         expected = [call('CNN-Top Stories'), call('CNN-World')]
-        self.assertEqual(expected, mock_memcache.call_args_list)
+        self.assertEqual(expected, mock_memcache.get.call_args_list)
+
+        expected = 2 * [call(trend, mock_entries[0]),
+                        call(trend, mock_entries[1])]
+        self.assertEqual(expected, mock_calc_score.call_args_list)
+
+        expected = [call(mock_entries[0]['link'], use_og=True),
+                    call(mock_entries[1]['link'], use_og=True)]
+        self.assertEqual(expected, mock_find_image.call_args_list)
+
+        mock_add_content.assert_called_once_with(
+            '%s-%s-%s' % (trend, location, timestamp),
+            [
+                {
+                    'link': 'foo',
+                    'source': 'CNN',
+                    'score': 10,
+                    'image': 'image.jpg'
+                },
+                {
+                    'link': 'bar',
+                    'source': 'CNN',
+                    'score': 5,
+                    'image': 'image.jpg'
+                }
+            ])
+
