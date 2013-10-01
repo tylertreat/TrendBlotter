@@ -9,3 +9,4 @@ nose-exclude
 NoseGunit
 webapp2
 pil
+git+git://github.com/tylertreat/gae-utils.git#egg=gae_utils
