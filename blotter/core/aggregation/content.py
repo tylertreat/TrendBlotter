@@ -78,11 +78,16 @@ def aggregate_content(trend, location, timestamp):
     # Parse every feed and look for relevant content
     for source, data in SOURCES.iteritems():
         for feed_name, feed_url in data['feeds'].iteritems():
+            cache_key = '%s-%s' % (source, feed_name)
+
             if source == 'QUERY':
                 feed_url = feed_url % (urllib2.quote(trend.encode('utf8')),
                                        urllib2.quote(location.encode('utf8')))
 
-            entries = memcache.get('%s-%s' % (source, feed_name))
+                cache_key = '%s-%s-%s-%s' % (source, feed_name, trend,
+                                             location)
+
+            entries = memcache.get(cache_key)
 
             if not entries:
                 entries = feedparser.parse(feed_url).get('entries', [])

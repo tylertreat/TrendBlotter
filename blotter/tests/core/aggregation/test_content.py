@@ -135,3 +135,55 @@ class TestAggregateContent(unittest.TestCase):
                 }
             ])
 
+    @patch('blotter.core.aggregation.content._add_content_to_trend')
+    @patch('blotter.core.aggregation.content._find_content_image_url')
+    @patch('blotter.core.aggregation.content._calculate_score')
+    def test_query_from_cache(self, mock_calc_score, mock_find_image,
+                              mock_add_content, mock_memcache):
+        """Verify aggregate_content properly handles query data sources."""
+
+        content.SOURCES = {
+            'QUERY': {
+                'feeds': {
+                    'Google News':
+                    'https://news.google.com/news/feeds?q=%s&geo=%s&output=rss'
+                },
+                'options': {
+                    'use_og': False
+                }
+            }
+        }
+
+        mock_entries = [{'link': 'foo', 'title': 'Cool Story Bro - CNN'},
+                        {'link': 'bar', 'title': 'Bro Cool Story - BBC'}]
+        mock_memcache.get.return_value = mock_entries
+        mock_calc_score.side_effect = [10, 5]
+        mock_find_image.side_effect = ['image.jpg', None]
+
+        trend = 'trend'
+        location = 'Canada'
+        timestamp = time.time()
+
+        content.aggregate_content(trend, location, timestamp)
+
+        mock_memcache.get.assert_called_once_with(
+            'QUERY-Google News-%s-%s' % (trend, location))
+
+        expected = [call(trend, mock_entries[0]), call(trend, mock_entries[1])]
+        self.assertEqual(expected, mock_calc_score.call_args_list)
+
+        expected = [call(mock_entries[0]['link'], use_og=False),
+                    call(mock_entries[1]['link'], use_og=False)]
+        self.assertEqual(expected, mock_find_image.call_args_list)
+
+        mock_add_content.assert_called_once_with(
+            '%s-%s-%s' % (trend, location, timestamp),
+            [
+                {
+                    'link': 'foo',
+                    'source': 'CNN',
+                    'score': 10,
+                    'image': 'image.jpg'
+                }
+            ])
+
