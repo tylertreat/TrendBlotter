@@ -5,6 +5,7 @@ engine-like solution.
 """
 
 import logging
+import re
 import urllib2
 import urlparse
 
@@ -145,8 +146,9 @@ def _calculate_score(trend, entry):
         entry: the feed entry to calculate a score for.
     """
 
-    count = entry.get('title', '').lower().count(trend.lower())
-    count += entry.get('summary', '').lower().count(trend.lower())
+    regex = re.compile(r'\b%s\b' % trend, re.IGNORECASE)
+    count = len(regex.findall(entry.get('title', '')))
+    count += len(regex.findall(entry.get('summary', '')))
     return count
 
 

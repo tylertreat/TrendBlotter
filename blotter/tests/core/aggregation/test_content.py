@@ -224,8 +224,8 @@ class TestCalculateScore(unittest.TestCase):
         """Verify _calculate_score correctly calculates trend scores."""
 
         trend = 'foo'
-        entry = {'title': 'This is a Story About Foo',
-                 'summary': 'Foo bar baz buz qux.'}
+        entry = {'title': 'This is a Story About Foo, Not Foobar',
+                 'summary': 'Foo bar baz buz qux barfoo foobar.'}
 
         actual = content._calculate_score(trend, entry)
 
