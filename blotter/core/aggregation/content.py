@@ -250,6 +250,9 @@ def _get_image_urls(url, soup):
         soup: a BeautifulSoup instance for the given URL.
     """
 
+    if url is None or soup is None:
+        raise StopIteration
+
     for img in soup.findAll("img", src=True):
         yield urlparse.urljoin(url, img["src"])
 

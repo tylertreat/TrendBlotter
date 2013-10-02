@@ -282,3 +282,127 @@ class TestGetImageSize(unittest.TestCase):
         mock_urlopen.assert_called_once_with(uri)
         self.assertFalse(mock_parser.called)
 
+
+@patch('blotter.core.aggregation.content.urllib2.urlopen')
+class TestFindContentImageUrl(unittest.TestCase):
+
+    def test_bail_on_bad_response(self, mock_urlopen):
+        """Verify _find_content_image_url returns None on bad responses."""
+
+        mock_urlopen.return_value = Mock(
+            headers={'Content-Type': 'application/json'})
+
+        url = 'http://foo.com'
+
+        actual = content._find_content_image_url(url)
+
+        self.assertEqual(None, actual)
+        mock_urlopen.assert_called_once_with(url)
+
+    @patch('blotter.core.aggregation.content.BeautifulSoup')
+    def test_use_og_image(self, mock_soup, mock_urlopen):
+        """Verify _find_content_image_url returns the og:image URL when enabled
+        and present on the page.
+        """
+
+        mock_response = Mock(headers={'Content-Type': 'text/html'})
+        mock_response.read.return_value = Mock()
+
+        mock_urlopen.return_value = mock_response
+        expected = 'http://foo.com/image.jpg'
+
+        mock_soup.return_value.find.return_value = {'content': expected}
+
+        url = 'http://foo.com'
+
+        actual = content._find_content_image_url(url)
+
+        self.assertEqual(expected, actual)
+        mock_urlopen.assert_called_once_with(url)
+        mock_soup.assert_called_once_with(mock_response.read.return_value)
+        mock_soup.return_value.find.assert_called_once_with(
+            'meta', property='og:image')
+
+    @patch('blotter.core.aggregation.content.BeautifulSoup')
+    def test_use_thumbnail_spec(self, mock_soup, mock_urlopen):
+        """Verify _find_content_image_url returns the image_src URL when
+        present on the page.
+        """
+
+        mock_response = Mock(headers={'Content-Type': 'text/html'})
+        mock_response.read.return_value = Mock()
+
+        mock_urlopen.return_value = mock_response
+        expected = 'http://foo.com/image.jpg'
+
+        mock_soup.return_value.find.return_value = {'href': expected}
+
+        url = 'http://foo.com'
+
+        actual = content._find_content_image_url(url, use_og=False)
+
+        self.assertEqual(expected, actual)
+        mock_urlopen.assert_called_once_with(url)
+        mock_soup.assert_called_once_with(mock_response.read.return_value)
+        mock_soup.return_value.find.assert_called_once_with(
+            'link', rel='image_src')
+
+    @patch('blotter.core.aggregation.content._get_image_size')
+    @patch('blotter.core.aggregation.content._get_image_urls')
+    @patch('blotter.core.aggregation.content.BeautifulSoup')
+    def test_find_largest_image(self, mock_soup, mock_get_images,
+                                mock_get_size, mock_urlopen):
+        """Verify _find_content_image_url returns the largest image URL if all
+        else fails.
+        """
+
+        mock_response = Mock(headers={'Content-Type': 'text/html'})
+        mock_response.read.return_value = Mock()
+
+        mock_urlopen.return_value = mock_response
+
+        mock_soup.return_value.find.return_value = None
+        mock_get_images.return_value = ['http://foo.com/image1.jpg',
+                                        'http://foo.com/image2.jpg',
+                                        'http://foo.com/image3.jpg',
+                                        'http://foo.com/image4.jpg'
+                                        'http://foo.com/sprite.jpg']
+
+        mock_get_size.side_effect = [None, (10, 10), (500, 500),
+                                     (10000, 100), (510, 500)]
+
+        url = 'http://foo.com'
+
+        actual = content._find_content_image_url(url, use_og=False)
+
+        self.assertEqual(mock_get_images.return_value[2], actual)
+        mock_urlopen.assert_called_once_with(url)
+        mock_soup.assert_called_once_with(mock_response.read.return_value)
+        mock_get_images.assert_called_once_with(url, mock_soup.return_value)
+
+        expected = [call(image_url)
+                    for image_url in mock_get_images.return_value]
+        self.assertEqual(expected, mock_get_size.call_args_list)
+
+
+class TestGetImageUrls(unittest.TestCase):
+
+    def test_no_url(self):
+        """Verify _get_image_urls yields nothing if None is passed in as a URL.
+        """
+
+        for image_url in content._get_image_urls(None, Mock()):
+            self.assertTrue(False)
+
+    def test_get_urls(self):
+        """Verify _get_image_urls correctly returns the image URLs."""
+
+        url = 'http://foo.com'
+        soup = Mock()
+        soup.findAll.return_value = [{'src': '/image%d' % x} for x in range(3)]
+
+        for i, image_url in enumerate(content._get_image_urls(url, soup)):
+            self.assertEqual('%s/image%d' % (url, i), image_url)
+
+        soup.findAll.assert_called_once_with('img', src=True)
+
