@@ -149,7 +149,7 @@ class TestAggregateContent(unittest.TestCase):
                     'https://news.google.com/news/feeds?q=%s&geo=%s&output=rss'
                 },
                 'options': {
-                    'use_og': False
+                    'use_og': True
                 }
             }
         }
@@ -172,8 +172,8 @@ class TestAggregateContent(unittest.TestCase):
         expected = [call(trend, mock_entries[0]), call(trend, mock_entries[1])]
         self.assertEqual(expected, mock_calc_score.call_args_list)
 
-        expected = [call(mock_entries[0]['link'], use_og=False),
-                    call(mock_entries[1]['link'], use_og=False)]
+        expected = [call(mock_entries[0]['link'], use_og=True),
+                    call(mock_entries[1]['link'], use_og=True)]
         self.assertEqual(expected, mock_find_image.call_args_list)
 
         mock_add_content.assert_called_once_with(

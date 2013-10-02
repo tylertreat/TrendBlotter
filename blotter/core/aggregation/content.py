@@ -25,7 +25,7 @@ SOURCES = {
             'https://news.google.com/news/feeds?q=%s&geo=%s&output=rss'
         },
         'options': {
-            'use_og': False
+            'use_og': True
         }
     },
     'CNN': {
