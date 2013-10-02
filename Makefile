@@ -34,10 +34,10 @@ $(BUILD_DIR)/pip-dev.log: requirements_dev.txt
 			$(PIP) install -Ur requirements_dev.txt | tee $(BUILD_DIR)/pip-dev.log
 
 unit:
-		nosetests
+		nosetests --rednose
 
 integrations:
-		nosetests --logging-level=ERROR -a slow --with-coverage --cover-package=blotter
+		nosetests --rednose --logging-level=ERROR -a slow --with-coverage --cover-package=blotter
 
 test: clean integrations
 
