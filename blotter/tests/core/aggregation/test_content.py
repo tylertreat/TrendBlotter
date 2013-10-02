@@ -2,6 +2,7 @@ import time
 import unittest
 
 from mock import call
+from mock import Mock
 from mock import patch
 
 from blotter.core.aggregation import content
@@ -186,4 +187,47 @@ class TestAggregateContent(unittest.TestCase):
                     'image': 'image.jpg'
                 }
             ])
+
+
+@patch('blotter.core.aggregation.content.Trend')
+class TestAddContentToTrend(unittest.TestCase):
+
+    def test_no_content(self, mock_trend):
+        """Verify _add_content_to_trend does nothing when no content is passed
+        in.
+        """
+
+        content._add_content_to_trend(42, None)
+
+        self.assertFalse(mock_trend.get_by_id.called)
+
+    @patch('blotter.core.aggregation.content.scale_trend_rating')
+    def test_add_content(self, mock_scale, mock_trend):
+        """Verify the content passed in to _add_content_to_trend is added to
+        the Trend.
+        """
+
+        trend_id = 42
+        mock_content = [{'link': 'foo', 'source': 'CNN', 'image': 'image.jpg'}]
+        mock_trend_entity = Mock(name='foo', rating=10)
+        mock_trend.get_by_id.return_value = mock_trend_entity
+        mock_scale.return_value = 10
+
+        content._add_content_to_trend(trend_id, mock_content)
+
+        mock_trend_entity.put.assert_called_once_with()
+
+
+class TestCalculateScore(unittest.TestCase):
+
+    def test_calculate_score(self):
+        """Verify _calculate_score correctly calculates trend scores."""
+
+        trend = 'foo'
+        entry = {'title': 'This is a Story About Foo',
+                 'summary': 'Foo bar baz buz qux.'}
+
+        actual = content._calculate_score(trend, entry)
+
+        self.assertEqual(2, actual)
 
