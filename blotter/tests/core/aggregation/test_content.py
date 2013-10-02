@@ -231,3 +231,54 @@ class TestCalculateScore(unittest.TestCase):
 
         self.assertEqual(2, actual)
 
+
+@patch('blotter.core.aggregation.content.urllib2.urlopen')
+@patch('blotter.core.aggregation.content.ImageFile.Parser')
+class TestGetImageSize(unittest.TestCase):
+
+    def test_get_image_size(self, mock_parser, mock_urlopen):
+        """Verify _get_image_size correctly retrieves the image dimensions."""
+
+        mock_data = Mock()
+        mock_urlopen.return_value.read.return_value = mock_data
+        expected = (500, 500)
+        mock_parser.return_value = Mock(image=Mock(size=expected))
+        uri = 'http://foo.com/image.jpg'
+
+        actual = content._get_image_size(uri)
+
+        self.assertEqual(expected, actual)
+        mock_urlopen.assert_called_once_with(uri)
+        mock_parser.assert_called_once_with()
+        mock_parser.return_value.feed.assert_called_once_with(mock_data)
+
+    def test_no_data(self, mock_parser, mock_urlopen):
+        """Verify _get_image_size returns None when no data is received."""
+
+        mock_urlopen.return_value.read.return_value = None
+        mock_parser.return_value = Mock()
+        uri = 'http://foo.com/image.jpg'
+
+        actual = content._get_image_size(uri)
+
+        self.assertEqual(None, actual)
+        mock_urlopen.assert_called_once_with(uri)
+        mock_parser.assert_called_once_with()
+
+    def test_error(self, mock_parser, mock_urlopen):
+        """Verify _get_image_size returns None when a URLError is raised."""
+        from urllib2 import URLError
+
+        def side_effect(uri):
+            raise URLError('Oh snap')
+
+        mock_urlopen.side_effect = side_effect
+        mock_parser.return_value = Mock()
+        uri = 'http://foo.com/image.jpg'
+
+        actual = content._get_image_size(uri)
+
+        self.assertEqual(None, actual)
+        mock_urlopen.assert_called_once_with(uri)
+        self.assertFalse(mock_parser.called)
+
