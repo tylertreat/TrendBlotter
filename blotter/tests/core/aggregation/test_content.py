@@ -232,15 +232,15 @@ class TestCalculateScore(unittest.TestCase):
         self.assertEqual(2, actual)
 
 
-@patch('blotter.core.aggregation.content.urllib2.urlopen')
+@patch('blotter.core.aggregation.content.request')
 @patch('blotter.core.aggregation.content.ImageFile.Parser')
 class TestGetImageSize(unittest.TestCase):
 
-    def test_get_image_size(self, mock_parser, mock_urlopen):
+    def test_get_image_size(self, mock_parser, mock_request):
         """Verify _get_image_size correctly retrieves the image dimensions."""
 
         mock_data = Mock()
-        mock_urlopen.return_value.read.return_value = mock_data
+        mock_request.return_value.read.return_value = mock_data
         expected = (500, 500)
         mock_parser.return_value = Mock(image=Mock(size=expected))
         uri = 'http://foo.com/image.jpg'
@@ -248,48 +248,48 @@ class TestGetImageSize(unittest.TestCase):
         actual = content._get_image_size(uri)
 
         self.assertEqual(expected, actual)
-        mock_urlopen.assert_called_once_with(uri)
+        mock_request.assert_called_once_with(uri)
         mock_parser.assert_called_once_with()
         mock_parser.return_value.feed.assert_called_once_with(mock_data)
 
-    def test_no_data(self, mock_parser, mock_urlopen):
+    def test_no_data(self, mock_parser, mock_request):
         """Verify _get_image_size returns None when no data is received."""
 
-        mock_urlopen.return_value.read.return_value = None
+        mock_request.return_value.read.return_value = None
         mock_parser.return_value = Mock()
         uri = 'http://foo.com/image.jpg'
 
         actual = content._get_image_size(uri)
 
         self.assertEqual(None, actual)
-        mock_urlopen.assert_called_once_with(uri)
+        mock_request.assert_called_once_with(uri)
         mock_parser.assert_called_once_with()
 
-    def test_error(self, mock_parser, mock_urlopen):
+    def test_error(self, mock_parser, mock_request):
         """Verify _get_image_size returns None when a URLError is raised."""
         from urllib2 import URLError
 
         def side_effect(uri):
             raise URLError('Oh snap')
 
-        mock_urlopen.side_effect = side_effect
+        mock_request.side_effect = side_effect
         mock_parser.return_value = Mock()
         uri = 'http://foo.com/image.jpg'
 
         actual = content._get_image_size(uri)
 
         self.assertEqual(None, actual)
-        mock_urlopen.assert_called_once_with(uri)
+        mock_request.assert_called_once_with(uri)
         self.assertFalse(mock_parser.called)
 
 
-@patch('blotter.core.aggregation.content.urllib2.urlopen')
+@patch('blotter.core.aggregation.content.request')
 class TestFindContentImageUrl(unittest.TestCase):
 
-    def test_bail_on_bad_response(self, mock_urlopen):
+    def test_bail_on_bad_response(self, mock_request):
         """Verify _find_content_image_url returns None on bad responses."""
 
-        mock_urlopen.return_value = Mock(
+        mock_request.return_value = Mock(
             headers={'Content-Type': 'application/json'})
 
         url = 'http://foo.com'
@@ -297,10 +297,10 @@ class TestFindContentImageUrl(unittest.TestCase):
         actual = content._find_content_image_url(url)
 
         self.assertEqual(None, actual)
-        mock_urlopen.assert_called_once_with(url)
+        mock_request.assert_called_once_with(url)
 
     @patch('blotter.core.aggregation.content.BeautifulSoup')
-    def test_use_og_image(self, mock_soup, mock_urlopen):
+    def test_use_og_image(self, mock_soup, mock_request):
         """Verify _find_content_image_url returns the og:image URL when enabled
         and present on the page.
         """
@@ -308,7 +308,7 @@ class TestFindContentImageUrl(unittest.TestCase):
         mock_response = Mock(headers={'Content-Type': 'text/html'})
         mock_response.read.return_value = Mock()
 
-        mock_urlopen.return_value = mock_response
+        mock_request.return_value = mock_response
         expected = 'http://foo.com/image.jpg'
 
         mock_soup.return_value.find.return_value = {'content': expected}
@@ -318,13 +318,13 @@ class TestFindContentImageUrl(unittest.TestCase):
         actual = content._find_content_image_url(url)
 
         self.assertEqual(expected, actual)
-        mock_urlopen.assert_called_once_with(url)
+        mock_request.assert_called_once_with(url)
         mock_soup.assert_called_once_with(mock_response.read.return_value)
         mock_soup.return_value.find.assert_called_once_with(
             'meta', property='og:image')
 
     @patch('blotter.core.aggregation.content.BeautifulSoup')
-    def test_use_thumbnail_spec(self, mock_soup, mock_urlopen):
+    def test_use_thumbnail_spec(self, mock_soup, mock_request):
         """Verify _find_content_image_url returns the image_src URL when
         present on the page.
         """
@@ -332,7 +332,7 @@ class TestFindContentImageUrl(unittest.TestCase):
         mock_response = Mock(headers={'Content-Type': 'text/html'})
         mock_response.read.return_value = Mock()
 
-        mock_urlopen.return_value = mock_response
+        mock_request.return_value = mock_response
         expected = 'http://foo.com/image.jpg'
 
         mock_soup.return_value.find.return_value = {'href': expected}
@@ -342,7 +342,7 @@ class TestFindContentImageUrl(unittest.TestCase):
         actual = content._find_content_image_url(url, use_og=False)
 
         self.assertEqual(expected, actual)
-        mock_urlopen.assert_called_once_with(url)
+        mock_request.assert_called_once_with(url)
         mock_soup.assert_called_once_with(mock_response.read.return_value)
         mock_soup.return_value.find.assert_called_once_with(
             'link', rel='image_src')
@@ -351,7 +351,7 @@ class TestFindContentImageUrl(unittest.TestCase):
     @patch('blotter.core.aggregation.content._get_image_urls')
     @patch('blotter.core.aggregation.content.BeautifulSoup')
     def test_find_largest_image(self, mock_soup, mock_get_images,
-                                mock_get_size, mock_urlopen):
+                                mock_get_size, mock_request):
         """Verify _find_content_image_url returns the largest image URL if all
         else fails.
         """
@@ -359,7 +359,7 @@ class TestFindContentImageUrl(unittest.TestCase):
         mock_response = Mock(headers={'Content-Type': 'text/html'})
         mock_response.read.return_value = Mock()
 
-        mock_urlopen.return_value = mock_response
+        mock_request.return_value = mock_response
 
         mock_soup.return_value.find.return_value = None
         mock_get_images.return_value = ['http://foo.com/image1.jpg',
@@ -376,7 +376,7 @@ class TestFindContentImageUrl(unittest.TestCase):
         actual = content._find_content_image_url(url, use_og=False)
 
         self.assertEqual(mock_get_images.return_value[2], actual)
-        mock_urlopen.assert_called_once_with(url)
+        mock_request.assert_called_once_with(url)
         mock_soup.assert_called_once_with(mock_response.read.return_value)
         mock_get_images.assert_called_once_with(url, mock_soup.return_value)
 

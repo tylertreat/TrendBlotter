@@ -17,6 +17,7 @@ from PIL import ImageFile
 
 from blotter.core.aggregation import scale_trend_rating
 from blotter.core.aggregation import Trend
+from blotter.core.utils import request
 
 
 SOURCES = {
@@ -159,7 +160,7 @@ def _get_image_size(uri):
 
     response = None
     try:
-        response = urllib2.urlopen(uri)
+        response = request(uri)
         parser = ImageFile.Parser()
 
         while True:
@@ -192,7 +193,7 @@ def _find_content_image_url(url, use_og=True):
         an image URL or None if a suitable image was not found.
     """
 
-    response = urllib2.urlopen(url)
+    response = request(url)
     content_type = response.headers.get('Content-Type')
     content = response.read()
 
