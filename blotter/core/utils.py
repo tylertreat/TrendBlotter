@@ -1,5 +1,7 @@
 import urllib2
 
+from werkzeug.urls import url_fix
+
 
 def request(url):
     """Make an HTTP GET request to the given URL.
@@ -10,6 +12,8 @@ def request(url):
     Returns:
         urllib2 response.
     """
+
+    url = url_fix(url)
 
     request = urllib2.Request(
         url, headers={'User-Agent': ('Mozilla/5.0 (X11; Linux x86_64) '
