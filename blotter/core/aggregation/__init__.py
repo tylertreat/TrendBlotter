@@ -84,7 +84,7 @@ class Trend(ndb.Model):
 
 
 def scale_trend_rating(unscaled):
-    """Scale the given rating to the range [1, 100]."""
+    """Normalize the given trend rating value."""
 
     return (99 * (unscaled - 1)) / 9 + 1
 
