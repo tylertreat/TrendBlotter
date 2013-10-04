@@ -33,6 +33,8 @@ libraries:
   version: latest
 - name: PIL
   version: latest
+- name: lxml
+  version: latest
 
 handlers:
 - url: /favicon.ico

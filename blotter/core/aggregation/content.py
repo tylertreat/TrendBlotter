@@ -198,7 +198,7 @@ def _find_content_image_url(url, use_og=True):
     content = response.read()
 
     if content_type and 'html' in content_type and content:
-        soup = BeautifulSoup(content)
+        soup = BeautifulSoup(content, 'lxml')
     else:
         return None
 
@@ -256,6 +256,6 @@ def _get_image_urls(url, soup):
     if url is None or soup is None:
         raise StopIteration
 
-    for img in soup.findAll("img", src=True):
+    for img in soup.find_all("img", src=True):
         yield urlparse.urljoin(url, img["src"])
 

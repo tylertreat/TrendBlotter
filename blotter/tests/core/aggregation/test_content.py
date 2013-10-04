@@ -319,7 +319,8 @@ class TestFindContentImageUrl(unittest.TestCase):
 
         self.assertEqual(expected, actual)
         mock_request.assert_called_once_with(url)
-        mock_soup.assert_called_once_with(mock_response.read.return_value)
+        mock_soup.assert_called_once_with(mock_response.read.return_value,
+                                          'lxml')
         mock_soup.return_value.find.assert_called_once_with(
             'meta', property='og:image')
 
@@ -343,7 +344,8 @@ class TestFindContentImageUrl(unittest.TestCase):
 
         self.assertEqual(expected, actual)
         mock_request.assert_called_once_with(url)
-        mock_soup.assert_called_once_with(mock_response.read.return_value)
+        mock_soup.assert_called_once_with(mock_response.read.return_value,
+                                          'lxml')
         mock_soup.return_value.find.assert_called_once_with(
             'link', rel='image_src')
 
@@ -377,7 +379,8 @@ class TestFindContentImageUrl(unittest.TestCase):
 
         self.assertEqual(mock_get_images.return_value[2], actual)
         mock_request.assert_called_once_with(url)
-        mock_soup.assert_called_once_with(mock_response.read.return_value)
+        mock_soup.assert_called_once_with(mock_response.read.return_value,
+                                          'lxml')
         mock_get_images.assert_called_once_with(url, mock_soup.return_value)
 
         expected = [call(image_url)
@@ -399,10 +402,11 @@ class TestGetImageUrls(unittest.TestCase):
 
         url = 'http://foo.com'
         soup = Mock()
-        soup.findAll.return_value = [{'src': '/image%d' % x} for x in range(3)]
+        soup.find_all.return_value = [{'src': '/image%d' % x}
+                                      for x in range(3)]
 
         for i, image_url in enumerate(content._get_image_urls(url, soup)):
             self.assertEqual('%s/image%d' % (url, i), image_url)
 
-        soup.findAll.assert_called_once_with('img', src=True)
+        soup.find_all.assert_called_once_with('img', src=True)
 
