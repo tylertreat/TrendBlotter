@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 from operator import itemgetter
 import time
 
@@ -60,6 +61,7 @@ class Trend(ndb.Model):
     timestamp = ndb.DateTimeProperty(auto_now_add=True)
     name = ndb.StringProperty(required=True)
     rating = ndb.FloatProperty(required=True)
+    previous_rating = ndb.FloatProperty(indexed=False)
     content = ndb.JsonProperty(compressed=True)
     has_content = ndb.BooleanProperty()
 
@@ -68,6 +70,18 @@ class Trend(ndb.Model):
             self.has_content = True
         else:
             self.has_content = False
+
+    @property
+    def delta(self):
+        """The percentage this Trend has increased or decreased in popularity
+        since it was last trending.
+        """
+
+        if not self.previous_rating:
+            return 100.0
+
+        return (math.fabs((self.rating - self.previous_rating) /
+                          (self.rating + self.previous_rating) / 2)) * 100
 
     def unix_timestamp(self):
         """Return the timestamp as Unix time."""

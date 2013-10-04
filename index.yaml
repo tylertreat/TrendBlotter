@@ -12,3 +12,10 @@ indexes:
     direction: desc
   - name: rating
     direction: desc
+
+- kind: Trend
+  properties:
+  - name: location
+  - name: name
+  - name: timestamp
+    direction: desc

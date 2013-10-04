@@ -16,6 +16,7 @@ from blotter.core.aggregation import ApiRequestException
 from blotter.core.aggregation import ApiToken
 from blotter.core.aggregation import Location
 from blotter.core.aggregation import Trend
+from blotter.core.aggregation.client import get_previous_trend_rating
 
 
 API = 'https://api.twitter.com'
@@ -54,10 +55,11 @@ def get_trends_by_location(location_name, location_woeid):
 
     for rating, trend in enumerate(trends):
         trend_name = trend['name']
+        old_rating = get_previous_trend_rating(trend_name, location_name)
         trend_id = '%s-%s-%s' % (trend_name, location_name, utime)
         results.append(Trend(id=trend_id, name=trend_name, timestamp=timestamp,
                              location=ndb.Key(Location, location_name),
-                             rating=rating + 1))
+                             rating=rating + 1, previous_rating=old_rating))
 
     return results
 
