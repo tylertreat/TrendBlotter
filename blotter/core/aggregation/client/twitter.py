@@ -27,8 +27,14 @@ TRENDS_ENDPOINT = '/1.1/trends/place.json?id=%d'
 
 
 def get_trends_by_location(location_name, location_woeid):
-    """Fetch a list of the top 10 trending topics for the given location,
-    specified as a WOEID.
+    """Fetch a list of the top 10 trending topics for the given location.
+
+    Args:
+        location_name: name of location to collect trends for.
+        location_woeid: WOEID of location to collect trends for.
+
+    Returns:
+        list of trends.
     """
 
     resp, content = _make_authorized_get(TRENDS_ENDPOINT % location_woeid)
