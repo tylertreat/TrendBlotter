@@ -15,7 +15,6 @@ from bs4 import BeautifulSoup
 import feedparser
 from PIL import ImageFile
 
-from blotter.core.aggregation import scale_trend_rating
 from blotter.core.aggregation import Trend
 from blotter.core.utils import request
 
@@ -132,7 +131,7 @@ def _add_content_to_trend(trend_id, content):
         trend = Trend.get_by_id(trend_id)
         logging.debug('Adding %d articles to %s' % (len(content), trend.name))
         trend.content = content
-        trend.rating = scale_trend_rating(trend.rating + len(content))
+        trend.rating = trend.rating + len(content)
         trend.put()
 
 

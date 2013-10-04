@@ -15,7 +15,6 @@ from blotter import settings
 from blotter.core.aggregation import ApiRequestException
 from blotter.core.aggregation import ApiToken
 from blotter.core.aggregation import Location
-from blotter.core.aggregation import scale_trend_rating
 from blotter.core.aggregation import Trend
 
 
@@ -52,7 +51,7 @@ def get_trends_by_location(location_name, location_woeid):
         trend_id = '%s-%s-%s' % (trend_name, location_name, utime)
         results.append(Trend(id=trend_id, name=trend_name, timestamp=timestamp,
                              location=ndb.Key(Location, location_name),
-                             rating=scale_trend_rating(rating + 1)))
+                             rating=rating + 1))
 
     return results
 

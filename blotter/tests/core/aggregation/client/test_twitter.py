@@ -83,7 +83,7 @@ class TestGetTrendsByLocation(unittest.TestCase):
         self.assertEqual(1, actual[0].rating)
         self.assertEqual('#ReasonsToLive', actual[1].name)
         self.assertEqual('Worldwide', actual[1].location.id())
-        self.assertEqual(12.0, actual[1].rating)
+        self.assertEqual(2.0, actual[1].rating)
 
 
 class TestGetLocationsWithTrends(unittest.TestCase):

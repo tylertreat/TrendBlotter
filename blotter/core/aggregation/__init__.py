@@ -82,9 +82,3 @@ class Trend(ndb.Model):
 
         return sorted(self.content, key=itemgetter('score'), reverse=True)[0]
 
-
-def scale_trend_rating(unscaled):
-    """Normalize the given trend rating value."""
-
-    return (99 * (unscaled - 1)) / 9 + 1
-

@@ -201,8 +201,7 @@ class TestAddContentToTrend(unittest.TestCase):
 
         self.assertFalse(mock_trend.get_by_id.called)
 
-    @patch('blotter.core.aggregation.content.scale_trend_rating')
-    def test_add_content(self, mock_scale, mock_trend):
+    def test_add_content(self, mock_trend):
         """Verify the content passed in to _add_content_to_trend is added to
         the Trend.
         """
@@ -211,7 +210,6 @@ class TestAddContentToTrend(unittest.TestCase):
         mock_content = [{'link': 'foo', 'source': 'CNN', 'image': 'image.jpg'}]
         mock_trend_entity = Mock(name='foo', rating=10)
         mock_trend.get_by_id.return_value = mock_trend_entity
-        mock_scale.return_value = 10
 
         content._add_content_to_trend(trend_id, mock_content)
 
