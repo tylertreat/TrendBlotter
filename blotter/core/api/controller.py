@@ -20,7 +20,9 @@ def page_not_found(e):
 def index():
     """Render the index page."""
 
-    return render_template('index.html', trends=_get_trends())
+    worldwide = get_trends_for_location('Worldwide', 1)[0]
+    return render_template('index.html', worldwide=worldwide,
+                           trends=_get_trends())
 
 
 @blueprint.route('/aggregate')
@@ -36,29 +38,23 @@ def aggregate_trends():
 
 
 def _get_trends():
-    trends_dict = {}
-    locations = ['Worldwide', 'United States', 'Canada', 'United Kingdom',
-                 'Japan', 'Australia', 'Russia']
+    trends_list = []
+    locations = ['United States', 'Canada', 'United Kingdom', 'Japan',
+                 'Australia', 'Russia', 'Germany', 'France', 'Mexico', 'Kenya',
+                 'Singapore', 'Turkey']
 
     for location in locations:
         trends = get_trends_for_location(location, 1)
+
         if not trends:
-            trends_dict[location.replace(' ', '_')] = {'url': 'n/a',
-                                                       'name': 'n/a',
-                                                       'image_url': 'n/a',
-                                                       'source': 'n/a'}
             continue
 
         trend = trends[0]
-        content = trend.best_content()
-        if not content:
-            content = {'link': 'n/a', 'image': 'n/a', 'source': 'n/a'}
 
-        trend = {'url': content['link'], 'name': trend.name,
-                 'image_url': content['image'],
-                 'source': content['source']}
+        if not trend.best_content:
+            continue
 
-        trends_dict[location.replace(' ', '_')] = trend
+        trends_list.append(trend)
 
-    return trends_dict
+    return trends_list
 

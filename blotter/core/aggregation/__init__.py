@@ -1,5 +1,4 @@
 from datetime import datetime
-import math
 from operator import itemgetter
 import time
 
@@ -83,11 +82,7 @@ class Trend(ndb.Model):
         return ((self.rating - self.previous_rating) /
                 (self.rating + self.previous_rating) / 2.0) * 100
 
-    def unix_timestamp(self):
-        """Return the timestamp as Unix time."""
-
-        return time.mktime(self.timestamp.timetuple())
-
+    @property
     def best_content(self):
         """Return the highest scored content for this Trend."""
 
@@ -95,4 +90,10 @@ class Trend(ndb.Model):
             return None
 
         return sorted(self.content, key=itemgetter('score'), reverse=True)[0]
+
+    def unix_timestamp(self):
+        """Return the timestamp as Unix time."""
+
+        return time.mktime(self.timestamp.timetuple())
+
 
