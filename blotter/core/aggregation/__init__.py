@@ -80,8 +80,8 @@ class Trend(ndb.Model):
         if not self.previous_rating:
             return 100.0
 
-        return (math.fabs((self.rating - self.previous_rating) /
-                          (self.rating + self.previous_rating) / 2)) * 100
+        return ((self.rating - self.previous_rating) /
+                (self.rating + self.previous_rating) / 2.0) * 100
 
     def unix_timestamp(self):
         """Return the timestamp as Unix time."""
