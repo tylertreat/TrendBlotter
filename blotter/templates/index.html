@@ -28,12 +28,12 @@
                 {% if worldwide.delta >= 0 %}
                     <span style="color:green">
                         <i class="icon-arrow-up"></i>
-                        {{ worldwide.delta }} 
+                        {{ "%.2f%%" % worldwide.delta }} 
                     </span>
                 {% else %}
                     <span style="color:red"> 
                         <i class="icon-arrow-down"></i>
-                        {{ worldwide.delta }} 
+                        {{ "%.2f%%" % worldwide.delta }} 
                     </span>
                 {% endif %}
                 {{ worldwide.name }}
@@ -60,12 +60,12 @@
                     {% if trend.delta >= 0 %}
                         <span style="color:green">
                             <i class="icon-arrow-up"></i>
-                            {{ trend.delta }} 
+                            {{ "%.2f%%" % trend.delta }} 
                         </span>
                     {% else %}
                         <span style="color:red"> 
                             <i class="icon-arrow-down"></i>
-                            {{ trend.delta }} 
+                            {{ "%.2f%%" % trend.delta }} 
                         </span>
                     {% endif %}
                     {{ trend.name }}
