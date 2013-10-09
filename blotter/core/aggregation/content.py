@@ -4,14 +4,19 @@ articles. In the future, this should probably be replaced by a more search-
 engine-like solution.
 """
 
+import hashlib
 import logging
 import re
 import urllib2
 import urlparse
+import webapp2
 
+from google.appengine.api import blobstore
 from google.appengine.api import memcache
+from google.appengine.ext.webapp import blobstore_handlers
 
 from bs4 import BeautifulSoup
+import cloudstorage as gcs
 import feedparser
 from PIL import ImageFile
 
@@ -112,7 +117,13 @@ def aggregate_content(trend, location, timestamp):
                     if not image_url:
                         continue
 
-                    source_content['image'] = image_url
+                    image_hash = hashlib.sha1(image_url).hexdigest()
+                    key = _copy_image_to_gcs(image_url, image_hash)
+
+                    if not key:
+                        continue
+
+                    source_content['image_key'] = image_hash
                     content.append(source_content)
 
     # Update the Trend with content
@@ -179,6 +190,47 @@ def _get_image_size(uri):
     finally:
         if response:
             response.close()
+
+
+def _copy_image_to_gcs(image_url, image_hash):
+    """Download the image at the given URL and upload it to the blobstore.
+
+    Args:
+        image_url: the URL where the image is located.
+        image_hash: a hash identifying the image.
+
+    Returns:
+        the uploaded image's blob key or None is the process failed.
+    """
+
+    response = request(image_url)
+    content_type = response.headers.get('Content-Type')
+    content = response.read()
+
+    if content_type and content:
+        return _write_to_gcs(content, image_hash, content_type)
+
+    return None
+
+
+def _write_to_gcs(content, content_hash, mime_type):
+    """Write the given data to cloud storage.
+
+    Args:
+        content: the file data to write.
+        content_hash: a hash identifying the content.
+        mime_type: the mime type of the content.
+
+    Returns:
+        the blob key for the content.
+    """
+
+    gcs_filename = '/content_images/%s' % content_hash
+
+    with gcs.open(gcs_filename, 'w', content_type=mime_type) as gcs_file:
+        gcs_file.write(content)
+
+    return blobstore.create_gs_key('/gs%s' % gcs_filename)
 
 
 def _find_content_image_url(url, use_og=True):
@@ -257,4 +309,24 @@ def _get_image_urls(url, soup):
 
     for img in soup.find_all("img", src=True):
         yield urlparse.urljoin(url, img["src"])
+
+
+class BlobHandler(blobstore_handlers.BlobstoreDownloadHandler):
+
+    def get(self):
+        image_key = self.request.get('image_key')
+
+        if not image_key:
+            logging.error("No image key")
+            return
+
+        image = gcs.open('/content_images/%s' % image_key)
+        self.response.headers['Content-Type'] = 'image/jpeg'
+        self.response.write(image.read())
+        image.close()
+
+
+app = webapp2.WSGIApplication([
+    ('/image', BlobHandler),
+], config={})
 

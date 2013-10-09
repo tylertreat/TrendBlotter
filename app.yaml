@@ -56,5 +56,8 @@ handlers:
   script: main.app
   login: admin
 
+- url: /image
+  script: blotter.core.aggregation.content.app
+
 - url: .*
   script: main.app
