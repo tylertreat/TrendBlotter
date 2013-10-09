@@ -1,6 +1,8 @@
 TrendBlotter
 =========
-The world talks, we listen.
+TrendBlotter is a website that aggregates and analyzes social media trends. By collecting data from various sources around the web, like Twitter, Facebook, and Google+, TrendBlotter determines _what_ people are talking about _right now_ around the world and provides context around _why_ these things are trending.
+
+By aggregating this data over time, TrendBlotter compiles a history of social trends. A user will be able to “travel back in time” and see what was trending in the past and why. This data is also geographically cataloged, meaning we can see trends based on specific regions of the world.
 
 Getting Started
 ---------------
