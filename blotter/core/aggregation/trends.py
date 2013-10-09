@@ -92,8 +92,6 @@ def _aggregate_trend_content(trends, location):
                     args=(trend.name, location.name, trend.unix_timestamp()))
 
 
-
-
 def _location_dicts_to_entities(locations):
     """Convert the list of location dicts to location entities."""
 
