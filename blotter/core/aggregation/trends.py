@@ -21,6 +21,7 @@ from blotter.core.aggregation import CONTENT_QUEUE
 from blotter.core.aggregation import Location
 from blotter.core.aggregation.client import twitter
 from blotter.core.aggregation.content import aggregate_content
+from blotter.core.utils import chunk
 
 
 BATCH_SIZE = 15
@@ -91,15 +92,6 @@ def _aggregate_trend_content(trends, location):
                     args=(trend.name, location.name, trend.unix_timestamp()))
 
 
-def chunk(the_list, chunk_size):
-    """Chunks the given list into lists of size chunk_size."""
-
-    if not the_list or chunk_size <= 0:
-        yield []
-        return
-
-    for i in xrange(0, len(the_list), chunk_size):
-        yield the_list[i:i + chunk_size]
 
 
 def _location_dicts_to_entities(locations):
