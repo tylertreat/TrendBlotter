@@ -29,10 +29,13 @@ class TestAggregateContent(unittest.TestCase):
         content.SOURCES = self.old_sources
 
     @patch('blotter.core.aggregation.content._add_content_to_trend')
+    @patch('blotter.core.aggregation.content._copy_image_to_gcs')
+    @patch('blotter.core.aggregation.content.hashlib.sha1')
     @patch('blotter.core.aggregation.content._find_content_image_url')
     @patch('blotter.core.aggregation.content._calculate_score')
     def test_from_cache(self, mock_calc_score, mock_find_image,
-                        mock_add_content, mock_memcache):
+                        mock_sha1, mock_copy_image, mock_add_content,
+                        mock_memcache):
         """Verify aggregate_content crawls the RSS feeds from memcache for each
         data source when available, retrieves relevant, and updates the Trend
         entity.
@@ -41,6 +44,9 @@ class TestAggregateContent(unittest.TestCase):
         mock_entries = [{'link': 'foo'}, {'link': 'bar'}]
         mock_memcache.get.return_value = mock_entries
         mock_calc_score.side_effect = [10, 5, 0, 0]
+        image_hash = 'hash'
+        mock_sha1.return_value.hexdigest.return_value = image_hash
+        mock_copy_image.return_value = 'imagekey'
         mock_find_image.return_value = 'image.jpg'
 
         trend = 'trend'
@@ -67,22 +73,25 @@ class TestAggregateContent(unittest.TestCase):
                     'link': 'foo',
                     'source': 'CNN',
                     'score': 10,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 },
                 {
                     'link': 'bar',
                     'source': 'CNN',
                     'score': 5,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 }
             ])
 
     @patch('blotter.core.aggregation.content._add_content_to_trend')
+    @patch('blotter.core.aggregation.content._copy_image_to_gcs')
+    @patch('blotter.core.aggregation.content.hashlib.sha1')
     @patch('blotter.core.aggregation.content._find_content_image_url')
     @patch('blotter.core.aggregation.content._calculate_score')
     @patch('blotter.core.aggregation.content.feedparser.parse')
     def test_no_cache(self, mock_parse, mock_calc_score, mock_find_image,
-                      mock_add_content, mock_memcache):
+                      mock_sha1, mock_copy_image, mock_add_content,
+                      mock_memcache):
         """Verify aggregate_content crawls the RSS feeds for each data source
         retrieves relevant, and updates the Trend entity. When a feed is
         fetched, its entries are cached for 3600 seconds.
@@ -92,6 +101,9 @@ class TestAggregateContent(unittest.TestCase):
         mock_memcache.get.return_value = None
         mock_parse.return_value = {'entries': mock_entries}
         mock_calc_score.side_effect = [10, 5, 0, 0]
+        image_hash = 'hash'
+        mock_sha1.return_value.hexdigest.return_value = image_hash
+        mock_copy_image.return_value = 'imagekey'
         mock_find_image.return_value = 'image.jpg'
 
         trend = 'trend'
@@ -126,21 +138,24 @@ class TestAggregateContent(unittest.TestCase):
                     'link': 'foo',
                     'source': 'CNN',
                     'score': 10,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 },
                 {
                     'link': 'bar',
                     'source': 'CNN',
                     'score': 5,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 }
             ])
 
     @patch('blotter.core.aggregation.content._add_content_to_trend')
+    @patch('blotter.core.aggregation.content._copy_image_to_gcs')
+    @patch('blotter.core.aggregation.content.hashlib.sha1')
     @patch('blotter.core.aggregation.content._find_content_image_url')
     @patch('blotter.core.aggregation.content._calculate_score')
     def test_query_from_cache(self, mock_calc_score, mock_find_image,
-                              mock_add_content, mock_memcache):
+                              mock_sha1, mock_copy_image, mock_add_content,
+                              mock_memcache):
         """Verify aggregate_content properly handles query data sources."""
 
         content.SOURCES = {
@@ -160,6 +175,9 @@ class TestAggregateContent(unittest.TestCase):
         mock_memcache.get.return_value = mock_entries
         mock_calc_score.side_effect = [10, 5]
         mock_find_image.side_effect = ['image.jpg', None]
+        image_hash = 'hash'
+        mock_sha1.return_value.hexdigest.return_value = image_hash
+        mock_copy_image.return_value = 'imagekey'
 
         trend = 'trend'
         location = 'Canada'
@@ -184,7 +202,7 @@ class TestAggregateContent(unittest.TestCase):
                     'link': 'foo',
                     'source': 'CNN',
                     'score': 10,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 }
             ])
 
@@ -407,4 +425,70 @@ class TestGetImageUrls(unittest.TestCase):
             self.assertEqual('%s/image%d' % (url, i), image_url)
 
         soup.find_all.assert_called_once_with('img', src=True)
+
+
+@patch('blotter.core.aggregation.content._write_to_gcs')
+@patch('blotter.core.aggregation.content.request')
+class TestCopyImageToGcs(unittest.TestCase):
+
+    def test_happy_path(self, mock_request, mock_write_gcs):
+        """Verify _copy_image_to_gcs downloads the image data and sends it to
+        Google Cloud Storage.
+        """
+
+        mock_response = Mock(headers={'Content-Type': 'image/jpeg'})
+        mock_request.return_value = mock_response
+        mock_response.read.return_value = 'image data'
+        mock_write_gcs.return_value = 'key'
+        image_url = 'http://foo.com/image.jpg'
+        image_hash = 'hash'
+
+        actual = content._copy_image_to_gcs(image_url, image_hash)
+
+        self.assertEqual(mock_write_gcs.return_value, actual)
+        mock_request.assert_called_once_with(image_url)
+        mock_response.read.assert_called_once_with()
+        mock_write_gcs.assert_called_once_with(mock_response.read.return_value,
+                                               image_hash, 'image/jpeg')
+
+    def test_sad_path(self, mock_request, mock_write_gcs):
+        """Verify _copy_image_to_gcs returns None when there is a bad response.
+        """
+
+        mock_response = Mock(headers={'Content-Type': 'image/jpeg'})
+        mock_request.return_value = mock_response
+        mock_response.read.return_value = None
+        image_url = 'http://foo.com/image.jpg'
+        image_hash = 'hash'
+
+        actual = content._copy_image_to_gcs(image_url, image_hash)
+
+        self.assertEqual(None, actual)
+        mock_request.assert_called_once_with(image_url)
+        mock_response.read.assert_called_once_with()
+        self.assertFalse(mock_write_gcs.called)
+
+
+@patch('blotter.core.aggregation.content.blobstore.create_gs_key')
+@patch('blotter.core.aggregation.content.gcs.open')
+class TestWriteToGcs(unittest.TestCase):
+
+    def test_write_to_gcs(self, mock_open, mock_create_key):
+        """Verify _write_to_gcs writes the data to Google Cloud Storage."""
+
+        mock_gcs_file = Mock()
+        mock_open.return_value.__enter__.return_value = mock_gcs_file
+        mock_create_key.return_value = 'key'
+        data = 'data'
+        content_hash = 'hash'
+        mime_type = 'image/jpeg'
+
+        actual = content._write_to_gcs(data, content_hash, mime_type)
+
+        self.assertEqual(mock_create_key.return_value, actual)
+        mock_open.assert_called_once_with('/content_images/%s' % content_hash,
+                                          'w', content_type=mime_type)
+
+        mock_create_key.assert_called_once_with(
+            '/gs/content_images/%s' % content_hash)
 

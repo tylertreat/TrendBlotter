@@ -1,5 +1,8 @@
 """Create a flask app blueprint."""
 
+import furious_router
+furious_router.setup_lib_path()
+
 import flask
 
 from blotter.core.api.blueprint import blueprint
