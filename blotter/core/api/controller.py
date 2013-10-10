@@ -1,6 +1,7 @@
 import logging
 
 from flask import render_template
+from flask import Response
 
 from furious.async import Async
 
@@ -35,6 +36,22 @@ def aggregate_trends():
     logging.debug('Inserted aggregate Async')
 
     return '', 200
+
+
+@blueprint.route('/image/<image_key>')
+def get_image(image_key):
+    """Serve the content image with the given key."""
+    import cloudstorage as gcs
+
+    if not image_key:
+        logging.error("No image key provided")
+        return
+
+    image = gcs.open('/content_images/%s' % image_key)
+    response = Response(image.read(), mimetype='image/jpeg')
+    image.close()
+
+    return response
 
 
 def _get_trends():
