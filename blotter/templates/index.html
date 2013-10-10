@@ -21,7 +21,7 @@
     <div class="pure-g-r">
         <div class="pure-u-1-3 photo-box">
             <a href="{{ worldwide.best_content.link }}">
-                <img src="/image?image_key={{ worldwide.best_content.image_key }}" alt="{{ worldwide.name }}">
+                <img src="/image/{{ worldwide.best_content.image_key }}" alt="{{ worldwide.name }}">
             </a>
 
             <aside class="photo-box-caption">
@@ -53,7 +53,7 @@
         {% for trend in trends %}
             <div class="pure-u-1-3 photo-box">
                 <a href="{{ trend.best_content.link }}">
-                    <img src="/image?image_key={{ trend.best_content.image_key }}" alt="{{ trend.name }}">
+                    <img src="/image/{{ trend.best_content.image_key }}" alt="{{ trend.name }}">
                 </a>
 
                 <aside class="photo-box-caption">

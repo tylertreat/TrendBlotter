@@ -9,11 +9,9 @@ import logging
 import re
 import urllib2
 import urlparse
-import webapp2
 
 from google.appengine.api import blobstore
 from google.appengine.api import memcache
-from google.appengine.ext.webapp import blobstore_handlers
 
 from bs4 import BeautifulSoup
 import cloudstorage as gcs
@@ -309,24 +307,4 @@ def _get_image_urls(url, soup):
 
     for img in soup.find_all("img", src=True):
         yield urlparse.urljoin(url, img["src"])
-
-
-class BlobHandler(blobstore_handlers.BlobstoreDownloadHandler):
-
-    def get(self):
-        image_key = self.request.get('image_key')
-
-        if not image_key:
-            logging.error("No image key")
-            return
-
-        image = gcs.open('/content_images/%s' % image_key)
-        self.response.headers['Content-Type'] = 'image/jpeg'
-        self.response.write(image.read())
-        image.close()
-
-
-app = webapp2.WSGIApplication([
-    ('/image', BlobHandler),
-], config={})
 

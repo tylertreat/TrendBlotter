@@ -29,10 +29,13 @@ class TestAggregateContent(unittest.TestCase):
         content.SOURCES = self.old_sources
 
     @patch('blotter.core.aggregation.content._add_content_to_trend')
+    @patch('blotter.core.aggregation.content._copy_image_to_gcs')
+    @patch('blotter.core.aggregation.content.hashlib.sha1')
     @patch('blotter.core.aggregation.content._find_content_image_url')
     @patch('blotter.core.aggregation.content._calculate_score')
     def test_from_cache(self, mock_calc_score, mock_find_image,
-                        mock_add_content, mock_memcache):
+                        mock_sha1, mock_copy_image, mock_add_content,
+                        mock_memcache):
         """Verify aggregate_content crawls the RSS feeds from memcache for each
         data source when available, retrieves relevant, and updates the Trend
         entity.
@@ -41,6 +44,9 @@ class TestAggregateContent(unittest.TestCase):
         mock_entries = [{'link': 'foo'}, {'link': 'bar'}]
         mock_memcache.get.return_value = mock_entries
         mock_calc_score.side_effect = [10, 5, 0, 0]
+        image_hash = 'hash'
+        mock_sha1.return_value.hexdigest.return_value = image_hash
+        mock_copy_image.return_value = 'imagekey'
         mock_find_image.return_value = 'image.jpg'
 
         trend = 'trend'
@@ -67,22 +73,25 @@ class TestAggregateContent(unittest.TestCase):
                     'link': 'foo',
                     'source': 'CNN',
                     'score': 10,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 },
                 {
                     'link': 'bar',
                     'source': 'CNN',
                     'score': 5,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 }
             ])
 
     @patch('blotter.core.aggregation.content._add_content_to_trend')
+    @patch('blotter.core.aggregation.content._copy_image_to_gcs')
+    @patch('blotter.core.aggregation.content.hashlib.sha1')
     @patch('blotter.core.aggregation.content._find_content_image_url')
     @patch('blotter.core.aggregation.content._calculate_score')
     @patch('blotter.core.aggregation.content.feedparser.parse')
     def test_no_cache(self, mock_parse, mock_calc_score, mock_find_image,
-                      mock_add_content, mock_memcache):
+                      mock_sha1, mock_copy_image, mock_add_content,
+                      mock_memcache):
         """Verify aggregate_content crawls the RSS feeds for each data source
         retrieves relevant, and updates the Trend entity. When a feed is
         fetched, its entries are cached for 3600 seconds.
@@ -92,6 +101,9 @@ class TestAggregateContent(unittest.TestCase):
         mock_memcache.get.return_value = None
         mock_parse.return_value = {'entries': mock_entries}
         mock_calc_score.side_effect = [10, 5, 0, 0]
+        image_hash = 'hash'
+        mock_sha1.return_value.hexdigest.return_value = image_hash
+        mock_copy_image.return_value = 'imagekey'
         mock_find_image.return_value = 'image.jpg'
 
         trend = 'trend'
@@ -126,21 +138,24 @@ class TestAggregateContent(unittest.TestCase):
                     'link': 'foo',
                     'source': 'CNN',
                     'score': 10,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 },
                 {
                     'link': 'bar',
                     'source': 'CNN',
                     'score': 5,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 }
             ])
 
     @patch('blotter.core.aggregation.content._add_content_to_trend')
+    @patch('blotter.core.aggregation.content._copy_image_to_gcs')
+    @patch('blotter.core.aggregation.content.hashlib.sha1')
     @patch('blotter.core.aggregation.content._find_content_image_url')
     @patch('blotter.core.aggregation.content._calculate_score')
     def test_query_from_cache(self, mock_calc_score, mock_find_image,
-                              mock_add_content, mock_memcache):
+                              mock_sha1, mock_copy_image, mock_add_content,
+                              mock_memcache):
         """Verify aggregate_content properly handles query data sources."""
 
         content.SOURCES = {
@@ -160,6 +175,9 @@ class TestAggregateContent(unittest.TestCase):
         mock_memcache.get.return_value = mock_entries
         mock_calc_score.side_effect = [10, 5]
         mock_find_image.side_effect = ['image.jpg', None]
+        image_hash = 'hash'
+        mock_sha1.return_value.hexdigest.return_value = image_hash
+        mock_copy_image.return_value = 'imagekey'
 
         trend = 'trend'
         location = 'Canada'
@@ -184,7 +202,7 @@ class TestAggregateContent(unittest.TestCase):
                     'link': 'foo',
                     'source': 'CNN',
                     'score': 10,
-                    'image': 'image.jpg'
+                    'image_key': image_hash
                 }
             ])
 
