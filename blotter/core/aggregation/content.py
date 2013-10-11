@@ -16,6 +16,7 @@ from google.appengine.api import memcache
 from bs4 import BeautifulSoup
 import cloudstorage as gcs
 import feedparser
+import guess_language
 from PIL import ImageFile
 
 from blotter.core.aggregation import Trend
@@ -157,6 +158,13 @@ def _calculate_score(trend, entry):
         trend: the trend to calculate for.
         entry: the feed entry to calculate a score for.
     """
+
+    # Filter out content that is not in English
+    language = guess_language.guessLanguage(entry.get('summary', ''))
+    if language != 'en':
+        logging.debug('Filtering out non-English content: %s (%s)' %
+                      (entry.get('link', ''), language))
+        return 0
 
     regex = re.compile(r'\b%s\b' % trend, re.IGNORECASE)
     count = len(regex.findall(entry.get('title', '')))

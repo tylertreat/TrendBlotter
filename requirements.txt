@@ -12,3 +12,4 @@ itsdangerous
 git+git://github.com/WebFilings/furious.git#egg=furious
 feedparser
 beautifulsoup4
+guess-language

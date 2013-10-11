@@ -236,8 +236,11 @@ class TestAddContentToTrend(unittest.TestCase):
 
 class TestCalculateScore(unittest.TestCase):
 
-    def test_calculate_score(self):
+    @patch('blotter.core.aggregation.content.guess_language.guessLanguage')
+    def test_calculate_score(self, mock_guess_language):
         """Verify _calculate_score correctly calculates trend scores."""
+
+        mock_guess_language.return_value = 'en'
 
         trend = 'foo'
         entry = {'title': 'This is a Story About Foo, Not Foobar',
@@ -246,6 +249,24 @@ class TestCalculateScore(unittest.TestCase):
         actual = content._calculate_score(trend, entry)
 
         self.assertEqual(2, actual)
+        mock_guess_language.assert_called_once_with(entry['summary'])
+
+    @patch('blotter.core.aggregation.content.guess_language.guessLanguage')
+    def test_filter_non_english(self, mock_guess_language):
+        """Verify _calculate_score assigns a score of zero to content that is
+        determined as non-English.
+        """
+
+        mock_guess_language.return_value = 'it'
+
+        trend = 'foo'
+        entry = {'title': "Morto Erich Priebke, ex ufficiale SS",
+                 'summary': "L'ex capitano tedesco aveva compiuto a luglio"}
+
+        actual = content._calculate_score(trend, entry)
+
+        self.assertEqual(0, actual)
+        mock_guess_language.assert_called_once_with(entry['summary'])
 
 
 @patch('blotter.core.aggregation.content.request')
