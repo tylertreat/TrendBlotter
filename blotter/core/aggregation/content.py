@@ -160,7 +160,9 @@ def _calculate_score(trend, entry):
     """
 
     # Filter out content that is not in English
-    language = guess_language.guessLanguage(entry.get('summary', ''))
+    soup = BeautifulSoup(entry.get('summary', ''))
+    summary = ''.join(soup.find_all(text=True))
+    language = guess_language.guessLanguage(summary)
     if language != 'en':
         logging.debug('Filtering out non-English content: %s (%s)' %
                       (entry.get('link', ''), language))
@@ -168,7 +170,7 @@ def _calculate_score(trend, entry):
 
     regex = re.compile(r'\b%s\b' % trend, re.IGNORECASE)
     count = len(regex.findall(entry.get('title', '')))
-    count += len(regex.findall(entry.get('summary', '')))
+    count += len(regex.findall(summary))
     return count
 
 
