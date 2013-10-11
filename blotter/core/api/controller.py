@@ -1,5 +1,7 @@
 import logging
 
+from google.appengine.api import memcache
+
 from flask import render_template
 from flask import Response
 
@@ -47,9 +49,17 @@ def get_image(image_key):
         logging.error("No image key provided")
         return
 
+    image = memcache.get(image_key)
+
+    if image:
+        return Response(image, mimetype='image/jpeg')
+
     image = gcs.open('/content_images/%s' % image_key)
-    response = Response(image.read(), mimetype='image/jpeg')
+    data = image.read()
+    response = Response(data, mimetype='image/jpeg')
     image.close()
+
+    memcache.set(image_key, data)
 
     return response
 
