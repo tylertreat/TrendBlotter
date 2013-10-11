@@ -315,14 +315,16 @@ class TestFindContentImageUrl(unittest.TestCase):
         self.assertEqual(None, actual)
         mock_request.assert_called_once_with(url)
 
+    @patch('blotter.core.aggregation.content._get_image_size')
     @patch('blotter.core.aggregation.content.BeautifulSoup')
-    def test_use_og_image(self, mock_soup, mock_request):
-        """Verify _find_content_image_url returns the og:image URL when enabled
-        and present on the page.
+    def test_use_og_image(self, mock_soup, mock_get_size, mock_request):
+        """Verify _find_content_image_url returns the og:image URL when
+        enabled, it's present on the page, and of appropriate size.
         """
 
         mock_response = Mock(headers={'Content-Type': 'text/html'})
         mock_response.read.return_value = Mock()
+        mock_get_size.return_value = (400, 400)
 
         mock_request.return_value = mock_response
         expected = 'http://foo.com/image.jpg'
@@ -340,14 +342,16 @@ class TestFindContentImageUrl(unittest.TestCase):
         mock_soup.return_value.find.assert_called_once_with(
             'meta', property='og:image')
 
+    @patch('blotter.core.aggregation.content._get_image_size')
     @patch('blotter.core.aggregation.content.BeautifulSoup')
-    def test_use_thumbnail_spec(self, mock_soup, mock_request):
+    def test_use_thumbnail_spec(self, mock_soup, mock_get_size, mock_request):
         """Verify _find_content_image_url returns the image_src URL when
-        present on the page.
+        present on the page and of appropriate size.
         """
 
         mock_response = Mock(headers={'Content-Type': 'text/html'})
         mock_response.read.return_value = Mock()
+        mock_get_size.return_value = (400, 400)
 
         mock_request.return_value = mock_response
         expected = 'http://foo.com/image.jpg'

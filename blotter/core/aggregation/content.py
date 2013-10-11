@@ -260,12 +260,16 @@ def _find_content_image_url(url, use_og=True):
         og_image = (soup.find('meta', property='og:image') or
                     soup.find('meta', attrs={'name': 'og:image'}))
         if og_image and og_image['content']:
-            return og_image['content']
+            size = _get_image_size(og_image['content'])
+            if size and size[0] * size[1] >= 10000:
+                return og_image['content']
 
     # <link rel="image_src" href="http://...">
     thumbnail_spec = soup.find('link', rel='image_src')
     if thumbnail_spec and thumbnail_spec['href']:
-        return thumbnail_spec['href']
+        size = _get_image_size(thumbnail_spec['href'])
+        if size and size[0] * size[1] >= 10000:
+            return thumbnail_spec['href']
 
     # Look for the largest image on the page if the author has not provided one
     max_area = 0
@@ -279,7 +283,7 @@ def _find_content_image_url(url, use_og=True):
         area = size[0] * size[1]
 
         # Ignore little images
-        if area < 5000:
+        if area < 10000:
             continue
 
         # Ignore excessively long/wide images
