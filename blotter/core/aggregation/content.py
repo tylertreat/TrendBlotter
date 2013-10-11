@@ -22,6 +22,9 @@ from blotter.core.aggregation import Trend
 from blotter.core.utils import request
 
 
+SCORE_THRESHOLD = 1
+
+
 SOURCES = {
     'QUERY': {
         'feeds': {
@@ -107,7 +110,7 @@ def aggregate_content(trend, location, timestamp):
                 source_content = {'link': entry['link'], 'source': source,
                                   'score': _calculate_score(trend, entry)}
 
-                if source_content['score'] > 0:
+                if source_content['score'] > SCORE_THRESHOLD:
                     image_url = _find_content_image_url(
                         source_content['link'],
                         use_og=data['options']['use_og'])
