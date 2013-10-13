@@ -167,7 +167,9 @@ def _calculate_score(trend, entry):
         return 0
 
     # Filter out content that is not in English
-    language = guess_language.guessLanguage(entry.get('summary', ''))
+    soup = BeautifulSoup(entry.get('summary', ''))
+    summary = ''.join(soup.find_all(text=True))
+    language = guess_language.guessLanguage(summary)
     if language != 'en':
         return 0
 
