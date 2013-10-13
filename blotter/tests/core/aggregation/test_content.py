@@ -260,7 +260,7 @@ class TestCalculateScore(unittest.TestCase):
         mock_guess_language.return_value = 'it'
 
         trend = 'foo'
-        entry = {'title': "Morto Erich Priebke, ex ufficiale SS",
+        entry = {'title': "Foo Morto Erich Priebke, ex ufficiale SS",
                  'summary': "L'ex capitano tedesco aveva compiuto a luglio"}
 
         actual = content._calculate_score(trend, entry)

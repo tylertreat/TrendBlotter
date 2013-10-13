@@ -159,16 +159,18 @@ def _calculate_score(trend, entry):
         entry: the feed entry to calculate a score for.
     """
 
-    # Filter out content that is not in English
-    language = guess_language.guessLanguage(entry.get('summary', ''))
-    if language != 'en':
-        logging.debug('Filtering out non-English content: %s (%s)' %
-                      (entry.get('link', ''), language))
-        return 0
-
     regex = re.compile(r'\b%s\b' % trend, re.IGNORECASE)
     count = len(regex.findall(entry.get('title', '')))
     count += len(regex.findall(entry.get('summary', '')))
+
+    if count == 0:
+        return 0
+
+    # Filter out content that is not in English
+    language = guess_language.guessLanguage(entry.get('summary', ''))
+    if language != 'en':
+        return 0
+
     return count
 
 
