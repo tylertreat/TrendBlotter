@@ -266,6 +266,8 @@ def _find_content_image_url(url, use_og=True):
     else:
         return None
 
+    MIN_IMAGE_AREA = 32400
+
     # Allow the content author to specify the thumbnail, e.g.
     # <meta property="og:image" content="http://...">
     if use_og:
@@ -273,14 +275,14 @@ def _find_content_image_url(url, use_og=True):
                     soup.find('meta', attrs={'name': 'og:image'}))
         if og_image and og_image['content']:
             size = _get_image_size(og_image['content'])
-            if size and size[0] * size[1] >= 10000:
+            if size and size[0] * size[1] >= MIN_IMAGE_AREA:
                 return og_image['content']
 
     # <link rel="image_src" href="http://...">
     thumbnail_spec = soup.find('link', rel='image_src')
     if thumbnail_spec and thumbnail_spec['href']:
         size = _get_image_size(thumbnail_spec['href'])
-        if size and size[0] * size[1] >= 10000:
+        if size and size[0] * size[1] >= MIN_IMAGE_AREA:
             return thumbnail_spec['href']
 
     # Look for the largest image on the page if the author has not provided one
