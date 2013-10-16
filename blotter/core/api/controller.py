@@ -59,6 +59,7 @@ def get_image(image_key):
     response = Response(data, mimetype='image/jpeg')
     image.close()
 
+    # TODO: Memcache cannot handle images greater than 1MB
     memcache.set(image_key, data)
 
     return response
