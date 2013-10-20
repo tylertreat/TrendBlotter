@@ -85,7 +85,7 @@ def aggregate_for_locations(locations):
                                                     location.woeid)
 
             # Filter out stop words
-            trends = [trend for trend in trends if trend not in STOP_WORDS]
+            trends = [t for t in trends if t.lower() not in STOP_WORDS]
 
             if trends:
                 logging.debug('Persisting %d trends for %s' % (len(trends),
