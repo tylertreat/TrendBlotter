@@ -67,9 +67,9 @@ def get_image(image_key):
 
 def _get_trends():
     trends_list = []
-    locations = ['United States', 'Canada', 'United Kingdom', 'Japan',
-                 'Australia', 'Russia', 'Germany', 'France', 'Mexico', 'India',
-                 'Singapore', 'Turkey', 'Brazil', 'South Africa']
+    locations = ['Worldwide', 'United States', 'Canada', 'United Kingdom',
+                 'Japan', 'Australia', 'Russia', 'Germany', 'France', 'Mexico',
+                 'India', 'Singapore', 'Turkey', 'Brazil', 'South Africa']
 
     for location in locations:
         trends = get_trends_for_location(location, 1)
