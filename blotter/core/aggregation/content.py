@@ -297,7 +297,7 @@ def _find_content_image_url(url, use_og=True):
         area = size[0] * size[1]
 
         # Ignore little images
-        if area < 10000:
+        if area < MIN_IMAGE_AREA:
             continue
 
         # Ignore excessively long/wide images
