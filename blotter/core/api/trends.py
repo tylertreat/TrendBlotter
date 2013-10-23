@@ -26,18 +26,3 @@ def get_trends_for_location(location, count):
         Trend.location == ndb.Key('Location', location)
     )).order(-Trend.timestamp, -Trend.rating).fetch(count)
 
-
-def get_recent_trends(count, preferred=None, dedupe=True):
-    """Fetch recent and popular trends.
-
-    Args:
-        count: the number of trends to retrieve.
-        preferred: a list of location names to try to get trends for.
-        dedupe: ensure that duplicate trends are not returned.
-
-    Returns:
-        a dict mapping locations to trends.
-    """
-    # TODO
-    pass
-
