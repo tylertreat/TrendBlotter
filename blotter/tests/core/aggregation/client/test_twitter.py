@@ -5,6 +5,7 @@ import urllib
 
 from mock import Mock
 from mock import patch
+from mock import PropertyMock
 
 from blotter import settings
 from blotter.core.aggregation import ApiRequestException
@@ -23,17 +24,20 @@ class TestGetTrendsByLocation(unittest.TestCase):
         location_woeid = 1234
         location_name = 'Canada'
 
+        location = Mock()
+        type(location).name = PropertyMock(return_value=location_name)
+        type(location).woeid = PropertyMock(return_value=location_woeid)
+
         with self.assertRaises(ApiRequestException) as ctx:
-            twitter.get_trends_by_location(location_name, location_woeid)
+            twitter.get_trends_by_location(location)
 
         from blotter.core.aggregation.client.twitter import TRENDS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_ENDPOINT % location_woeid)
         self.assertIsInstance(ctx.exception, ApiRequestException)
 
-    @patch('blotter.core.aggregation.client.twitter.get_previous_trend_rating')
     @patch('blotter.core.aggregation.client.twitter._make_authorized_get')
-    def test_happy_path(self, mock_get, mock_previous_rating):
+    def test_happy_path(self, mock_get):
         """Ensure that the correct value is returned on a successful request.
         """
 
@@ -70,22 +74,21 @@ class TestGetTrendsByLocation(unittest.TestCase):
                 ]"""
 
         mock_get.return_value = (Mock(status=200), content)
-        mock_previous_rating.return_value = None
 
         location_woeid = 2972
         location_name = 'Worldwide'
 
-        actual = twitter.get_trends_by_location(location_name, location_woeid)
+        location = Mock()
+        type(location).name = PropertyMock(return_value=location_name)
+        type(location).woeid = PropertyMock(return_value=location_woeid)
+
+        actual = twitter.get_trends_by_location(location)
 
         from blotter.core.aggregation.client.twitter import TRENDS_ENDPOINT
 
         mock_get.assert_called_once_with(TRENDS_ENDPOINT % location_woeid)
-        self.assertEqual('#BenjLexieMarjLoveTriangle', actual[0].name)
-        self.assertEqual('Worldwide', actual[0].location.id())
-        self.assertEqual(1, actual[0].rating)
-        self.assertEqual('#ReasonsToLive', actual[1].name)
-        self.assertEqual('Worldwide', actual[1].location.id())
-        self.assertEqual(2.0, actual[1].rating)
+        self.assertEqual(('#BenjLexieMarjLoveTriangle', 1), actual[0])
+        self.assertEqual(('#ReasonsToLive', 2), actual[1])
 
 
 class TestGetLocationsWithTrends(unittest.TestCase):
@@ -107,9 +110,8 @@ class TestGetLocationsWithTrends(unittest.TestCase):
         mock_get.assert_called_once_with(TRENDS_LOCATIONS_ENDPOINT)
         self.assertIsInstance(ctx.exception, ApiRequestException)
 
-    @patch('blotter.core.aggregation.client.twitter.get_previous_trend_rating')
     @patch('blotter.core.aggregation.client.twitter._make_authorized_get')
-    def test_happy_path(self, mock_get, mock_previous_rating):
+    def test_happy_path(self, mock_get):
         """Ensure that the correct value is returned on a successful request.
         """
 
@@ -141,7 +143,6 @@ class TestGetLocationsWithTrends(unittest.TestCase):
                     ]"""
 
         mock_get.return_value = (Mock(status=200), content)
-        mock_previous_rating.return_value = None
 
         actual = twitter.get_locations_with_trends()
 

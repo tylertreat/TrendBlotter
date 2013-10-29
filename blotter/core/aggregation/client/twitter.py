@@ -1,22 +1,16 @@
 """This is a client that wraps Twitter's trends API."""
 
 import base64
-from datetime import datetime
 from httplib2 import Http
 import json
 import logging
-import time
 import urllib
 
 from google.appengine.api import memcache
-from google.appengine.ext import ndb
 
 from blotter import settings
 from blotter.core.aggregation import ApiRequestException
 from blotter.core.aggregation import ApiToken
-from blotter.core.aggregation import Location
-from blotter.core.aggregation import Trend
-from blotter.core.aggregation.client import get_previous_trend_rating
 
 
 API = 'https://api.twitter.com'
@@ -27,18 +21,17 @@ TRENDS_LOCATIONS_ENDPOINT = '/1.1/trends/available.json'
 TRENDS_ENDPOINT = '/1.1/trends/place.json?id=%d'
 
 
-def get_trends_by_location(location_name, location_woeid):
+def get_trends_by_location(location):
     """Fetch a list of the top 10 trending topics for the given location.
 
     Args:
-        location_name: name of location to collect trends for.
-        location_woeid: WOEID of location to collect trends for.
+        location: location entity to collect trends for.
 
     Returns:
-        list of trends.
+        a list of tuples consisting of trend name and rating.
     """
 
-    resp, content = _make_authorized_get(TRENDS_ENDPOINT % location_woeid)
+    resp, content = _make_authorized_get(TRENDS_ENDPOINT % location.woeid)
 
     if resp.status != 200:
         raise ApiRequestException(
@@ -47,21 +40,11 @@ def get_trends_by_location(location_name, location_woeid):
 
     content = json.loads(content.encode('utf-8'))
     trends = content[0].get('trends', [])
+
+    # Reverse so we assign lower scores first
     trends.reverse()
-    timestamp = datetime.now()
-    utime = time.mktime(timestamp.timetuple())
 
-    results = []
-
-    for rating, trend in enumerate(trends):
-        trend_name = trend['name']
-        old_rating = get_previous_trend_rating(trend_name, location_name)
-        trend_id = '%s-%s-%s' % (trend_name, location_name, utime)
-        results.append(Trend(id=trend_id, name=trend_name, timestamp=timestamp,
-                             location=ndb.Key(Location, location_name),
-                             rating=rating + 1, previous_rating=old_rating))
-
-    return results
+    return [(trend['name'], rating + 1) for rating, trend in enumerate(trends)]
 
 
 def get_locations_with_trends(exclude=None):

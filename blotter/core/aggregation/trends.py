@@ -8,7 +8,9 @@ Some important considerations:
       parallel.
 """
 
+from datetime import datetime
 import logging
+import time
 
 from google.appengine.ext import ndb
 
@@ -19,6 +21,9 @@ from blotter.core.aggregation import AGGREGATION_QUEUE
 from blotter.core.aggregation import ApiRequestException
 from blotter.core.aggregation import CONTENT_QUEUE
 from blotter.core.aggregation import Location
+from blotter.core.aggregation import Trend
+from blotter.core.aggregation.client import get_previous_trend_rating
+from blotter.core.aggregation.client import gplus
 from blotter.core.aggregation.client import twitter
 from blotter.core.aggregation.content import aggregate_content
 from blotter.core.utils import chunk
@@ -26,6 +31,7 @@ from blotter.core.utils import chunk
 
 BATCH_SIZE = 15
 THROTTLE_TIME = 60 * 16
+TREND_SOURCES = [twitter, gplus]
 
 # Places to exclude from aggregation, see
 # http://developer.yahoo.com/geo/geoplanet/guide/concepts.html#placetypes
@@ -81,8 +87,7 @@ def aggregate_for_locations(locations):
 
     for location in locations:
         try:
-            trends = twitter.get_trends_by_location(location.name,
-                                                    location.woeid)
+            trends = _get_trends_by_location(location)
 
             # Filter out stop words
             trends = [t for t in trends if t.name.lower() not in STOP_WORDS]
@@ -101,6 +106,40 @@ def aggregate_for_locations(locations):
             if e.status == 429:
                 logging.warn('Request limit window hit, aborting')
                 raise Abort()
+
+
+def _get_trends_by_location(location):
+    """Fetch trend data for the given location."""
+
+    trends = []
+
+    # Aggregate trends from all sources and then reduce them
+    for source in TREND_SOURCES:
+        trends.extend(source.get_trends_by_location(location))
+
+    # Group by trend name
+    unique_trends = set(map(lambda trend: trend[0], trends))
+    groups = [[trend for trend in trends if trend[0] == t]
+              for t in unique_trends]
+
+    reduced = []
+    timestamp = datetime.now()
+    utime = time.mktime(timestamp.timetuple())
+
+    # Reduce trends
+    for group in groups:
+        # Calculate the rating by averaging
+        rating = sum([pair[1] for pair in group]) / len(group)
+        trend_name = group[0][0]
+        old_rating = get_previous_trend_rating(trend_name, location.name)
+        trend_id = '%s-%s-%s' % (trend_name, location.name, utime)
+
+        reduced.append(Trend(id=trend_id, name=trend_name,
+                             timestamp=timestamp,
+                             location=ndb.Key(Location, location.name),
+                             rating=rating, previous_rating=old_rating))
+
+    return reduced
 
 
 def _aggregate_trend_content(trends, location):

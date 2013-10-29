@@ -101,7 +101,7 @@ class TestAggregate(unittest.TestCase):
 
 
 @patch('blotter.core.aggregation.trends.ndb.put_multi')
-@patch('blotter.core.aggregation.trends.twitter.get_trends_by_location')
+@patch('blotter.core.aggregation.trends._get_trends_by_location')
 @patch('blotter.core.aggregation.trends._location_dicts_to_entities')
 class TestAggregateForLocations(unittest.TestCase):
 
@@ -190,7 +190,7 @@ class TestAggregateForLocations(unittest.TestCase):
         aggregate_for_locations(self.locations)
 
         to_entities.assert_called_once_with(self.locations)
-        expected = [call(loc.name, loc.woeid) for loc in mock_locations]
+        expected = [call(location) for location in mock_locations]
         self.assertEqual(expected, get_trends.call_args_list)
         expected = [call(mock_locations), call(mock_trends), call(mock_trends),
                     call(mock_trends), call(mock_trends), call(mock_trends)]
@@ -206,7 +206,7 @@ class TestAggregateForLocations(unittest.TestCase):
                           for loc in self.locations]
         to_entities.return_value = mock_locations
 
-        def mock_get_trends(name, woeid):
+        def mock_get_trends(location):
             raise ApiRequestException('oh snap', 429)
 
         get_trends.side_effect = mock_get_trends
@@ -215,8 +215,7 @@ class TestAggregateForLocations(unittest.TestCase):
             aggregate_for_locations(self.locations)
 
         to_entities.assert_called_once_with(self.locations)
-        get_trends.assert_called_once_with(mock_locations[0].name,
-                                           mock_locations[0].woeid)
+        get_trends.assert_called_once_with(mock_locations[0])
         put_multi.assert_called_once_with(mock_locations)
         self.assertIsInstance(ctx.exception, Abort)
 

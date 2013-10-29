@@ -1,15 +1,17 @@
 import unittest
 
+from mock import Mock
 from mock import patch
+from mock import PropertyMock
 
-from blotter.core.aggregation.client.gplus import get_worldwide_trends
+from blotter.core.aggregation.client.gplus import get_trends_by_location
 
 
 @patch('blotter.core.aggregation.client.gplus.urllib2.urlopen')
-class TestGetWorldwideTrends(unittest.TestCase):
+class TestGetTrendsByLocation(unittest.TestCase):
 
     def test_happy_path(self, mock_urlopen):
-        """Verify get_worldwide_trends retrieves the top 10 trends from
+        """Verify get_trends_by_location retrieves the top 10 trends from
         Google+.
         """
 
@@ -53,7 +55,10 @@ class TestGetWorldwideTrends(unittest.TestCase):
         class="Jo"><a href="s/%23Moon/posts" target="_top" class="d-s ob FSc"
         tabindex="0">#Moon</a></span>"""
 
-        actual = get_worldwide_trends()
+        location = Mock()
+        type(location).name = PropertyMock(return_value='Worldwide')
+
+        actual = get_trends_by_location(location)
 
         self.assertEqual([('#Moon', 1), ('Taylor Swift', 2),
                           ('#FallColors', 3), ('Drone attacks in Pakistan', 4),
@@ -63,8 +68,8 @@ class TestGetWorldwideTrends(unittest.TestCase):
 
         mock_urlopen.assert_called_once_with('https://plus.google.com/s/a')
 
-    def test_sad_path(self, mock_urlopen):
-        """Verify get_worldwide_trends returns an empty list when the HTTP
+    def test_request_failure(self, mock_urlopen):
+        """Verify get_trends_by_location returns an empty list when the HTTP
         request fails.
         """
 
@@ -74,8 +79,21 @@ class TestGetWorldwideTrends(unittest.TestCase):
 
         mock_urlopen.side_effect = side_effect
 
-        actual = get_worldwide_trends()
+        location = Mock()
+        type(location).name = PropertyMock(return_value='Worldwide')
+
+        actual = get_trends_by_location(location)
 
         self.assertEqual([], actual)
         mock_urlopen.assert_called_once_with('https://plus.google.com/s/a')
+
+    def test_non_worldwide(self, mock_urlopen):
+        """Verify get_trends_by_location returns an empty list for
+        non-worldwide locations.
+        """
+
+        location = Mock()
+        type(location).name = PropertyMock(return_value='United States')
+
+        self.assertEqual([], get_trends_by_location(location))
 
