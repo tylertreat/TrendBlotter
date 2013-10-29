@@ -55,10 +55,11 @@ class TestGetWorldwideTrends(unittest.TestCase):
 
         actual = get_worldwide_trends()
 
-        self.assertEqual(['#HappyBirthdayViru', 'Red Sox', 'Facebook', '#Epic',
-                          '#Halloween2013', 'New Delhi',
-                          'Drone attacks in Pakistan', '#FallColors',
-                          'Taylor Swift', '#Moon'], actual)
+        self.assertEqual([('#Moon', 1), ('Taylor Swift', 2),
+                          ('#FallColors', 3), ('Drone attacks in Pakistan', 4),
+                          ('New Delhi', 5), ('#Halloween2013', 6),
+                          ('#Epic', 7), ('Facebook', 8), ('Red Sox', 9),
+                          ('#HappyBirthdayViru', 10)], actual)
 
         mock_urlopen.assert_called_once_with('https://plus.google.com/s/a')
 
