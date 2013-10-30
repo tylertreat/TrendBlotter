@@ -129,7 +129,7 @@ def _get_trends_by_location(location):
     # Reduce trends
     for group in groups:
         # Calculate the rating by averaging
-        rating = sum([pair[1] for pair in group]) / len(group)
+        rating = sum([pair[1] for pair in group]) / float(len(group))
         trend_name = group[0][0]
         old_rating = get_previous_trend_rating(trend_name, location.name)
         trend_id = '%s-%s-%s' % (trend_name, location.name, utime)
