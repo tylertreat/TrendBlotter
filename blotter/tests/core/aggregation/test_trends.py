@@ -4,6 +4,7 @@ import unittest
 from mock import call
 from mock import Mock
 from mock import patch
+from mock import PropertyMock
 
 from furious.errors import Abort
 
@@ -277,4 +278,43 @@ class TestLocationDictsToEntities(unittest.TestCase):
         self.assertEqual('mexico', actual[1].country)
         self.assertEqual('mx', actual[1].country_code)
         self.assertEqual(23424900, actual[1].woeid)
+
+
+@patch('blotter.core.aggregation.trends.get_previous_trend_rating')
+@patch('blotter.core.aggregation.trends.gplus.get_trends_by_location')
+@patch('blotter.core.aggregation.trends.twitter.get_trends_by_location')
+class TestGetTrendsByLocation(unittest.TestCase):
+
+    def test_happy_path(self, mock_twitter, mock_gplus, mock_previous_rating):
+        """Verify _get_trends_by_location fetches trends from all sources and
+        then reduces the results.
+        """
+        from blotter.core.aggregation.trends import _get_trends_by_location
+
+        mock_twitter.return_value = [('foo', 1), ('bar', 2), ('baz', 3)]
+        mock_gplus.return_value = [('foo', 3), ('bar', 1), ('baz', 6),
+                                   ('qux', 2)]
+        mock_previous_rating.return_value = None
+
+        location = Mock()
+        type(location).name = PropertyMock(return_value='Worldwide')
+
+        actual = _get_trends_by_location(location)
+
+        mock_twitter.assert_called_once_with(location)
+        mock_gplus.assert_called_once_with(location)
+        self.assertEqual(4, mock_previous_rating.call_count)
+        self.assertEqual(4, len(actual))
+        self.assertEqual('baz', actual[0].name)
+        self.assertEqual(4.5, actual[0].rating)
+        self.assertEqual('Worldwide', actual[0].location.id())
+        self.assertEqual('foo', actual[1].name)
+        self.assertEqual(2.0, actual[1].rating)
+        self.assertEqual('Worldwide', actual[1].location.id())
+        self.assertEqual('bar', actual[2].name)
+        self.assertEqual(1.5, actual[2].rating)
+        self.assertEqual('Worldwide', actual[2].location.id())
+        self.assertEqual('qux', actual[3].name)
+        self.assertEqual(2.0, actual[3].rating)
+        self.assertEqual('Worldwide', actual[3].location.id())
 
