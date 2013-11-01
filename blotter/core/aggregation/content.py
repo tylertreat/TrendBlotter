@@ -109,6 +109,7 @@ def aggregate_content(trend, location, timestamp):
                     source = entry['title'].split(' - ')[-1]
 
                 source_content = {'link': entry['link'], 'source': source,
+                                  'summary': entry.get('summary'),
                                   'score': _calculate_score(trend, entry)}
 
                 if source_content['score'] > SCORE_THRESHOLD:

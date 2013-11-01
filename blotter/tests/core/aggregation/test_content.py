@@ -41,7 +41,8 @@ class TestAggregateContent(unittest.TestCase):
         entity.
         """
 
-        mock_entries = [{'link': 'foo'}, {'link': 'bar'}]
+        mock_entries = [{'link': 'foo', 'summary': 'blah'},
+                        {'link': 'bar', 'summary': 'bloop'}]
         mock_memcache.get.return_value = mock_entries
         mock_calc_score.side_effect = [10, 5, 0, 0]
         image_hash = 'hash'
@@ -73,13 +74,15 @@ class TestAggregateContent(unittest.TestCase):
                     'link': 'foo',
                     'source': 'CNN',
                     'score': 10,
-                    'image_key': image_hash
+                    'image_key': image_hash,
+                    'summary': 'blah'
                 },
                 {
                     'link': 'bar',
                     'source': 'CNN',
                     'score': 5,
-                    'image_key': image_hash
+                    'image_key': image_hash,
+                    'summary': 'bloop'
                 }
             ])
 
@@ -97,7 +100,8 @@ class TestAggregateContent(unittest.TestCase):
         fetched, its entries are cached for 3600 seconds.
         """
 
-        mock_entries = [{'link': 'foo'}, {'link': 'bar'}]
+        mock_entries = [{'link': 'foo', 'summary': 'blah'},
+                        {'link': 'bar', 'summary': 'bloop'}]
         mock_memcache.get.return_value = None
         mock_parse.return_value = {'entries': mock_entries}
         mock_calc_score.side_effect = [10, 5, 0, 0]
@@ -138,13 +142,15 @@ class TestAggregateContent(unittest.TestCase):
                     'link': 'foo',
                     'source': 'CNN',
                     'score': 10,
-                    'image_key': image_hash
+                    'image_key': image_hash,
+                    'summary': 'blah'
                 },
                 {
                     'link': 'bar',
                     'source': 'CNN',
                     'score': 5,
-                    'image_key': image_hash
+                    'image_key': image_hash,
+                    'summary': 'bloop'
                 }
             ])
 
@@ -170,8 +176,10 @@ class TestAggregateContent(unittest.TestCase):
             }
         }
 
-        mock_entries = [{'link': 'foo', 'title': 'Cool Story Bro - CNN'},
-                        {'link': 'bar', 'title': 'Bro Cool Story - BBC'}]
+        mock_entries = [{'link': 'foo', 'title': 'Cool Story Bro - CNN',
+                         'summary': 'blah'},
+                        {'link': 'bar', 'title': 'Bro Cool Story - BBC',
+                         'summary': 'bloop'}]
         mock_memcache.get.return_value = mock_entries
         mock_calc_score.side_effect = [10, 5]
         mock_find_image.side_effect = ['image.jpg', None]
@@ -202,7 +210,8 @@ class TestAggregateContent(unittest.TestCase):
                     'link': 'foo',
                     'source': 'CNN',
                     'score': 10,
-                    'image_key': image_hash
+                    'image_key': image_hash,
+                    'summary': 'blah'
                 }
             ])
 
