@@ -1,5 +1,6 @@
 """This module is responsible for aggregating trend data from social media.
-Currently, Twitter is the only data source but others may be added ad hoc.
+Currently, Twitter and Google+ are the only data sources but others may be
+added ad hoc.
 
 Some important considerations:
     - Twitter limits applications to 15 API calls per 15 minutes for the trends
