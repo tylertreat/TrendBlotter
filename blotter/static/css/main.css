@@ -16,6 +16,12 @@ h1,h2,h3,h4,h5,h6 {
     color: #31e262;
 }
 
+.rollover {
+    display:none;
+    background:rgba(1, 1, 1, 0.5);
+    position:absolute;
+}
+
 .l-box {
     padding: 2em;
 }
